@@ -1,0 +1,26 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to publish as a GitHub release
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify tag exists
+        run: git show-ref --tags --verify "refs/tags/${{ inputs.tag }}"
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ inputs.tag }}" --verify-tag --generate-notes --title "Air Traffic ${{ inputs.tag }}"

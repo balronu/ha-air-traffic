@@ -1,0 +1,20 @@
+name: Support question
+description: Ask a configuration or troubleshooting question.
+title: "[Support]: "
+labels: [question]
+body:
+  - type: input
+    id: ha_version
+    attributes:
+      label: Home Assistant version
+    validations:
+      required: true
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Redacted configuration and symptoms
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: Do not include secrets, private URLs or personal location data.

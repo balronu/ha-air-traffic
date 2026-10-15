@@ -1,0 +1,42 @@
+name: Bug report
+description: Report a reproducible Air Traffic problem.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Never include tokens, API keys, private URLs or personal location data.
+  - type: input
+    id: ha_version
+    attributes:
+      label: Home Assistant version
+    validations:
+      required: true
+  - type: input
+    id: integration_version
+    attributes:
+      label: Air Traffic version
+    validations:
+      required: true
+  - type: dropdown
+    id: source_mode
+    attributes:
+      label: Source mode
+      options:
+        - FR24 only
+        - ADS-B URL
+        - ADS-B entity
+        - FR24 + ADS-B
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Problem and reproduction steps
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Redacted logs
+      render: text
