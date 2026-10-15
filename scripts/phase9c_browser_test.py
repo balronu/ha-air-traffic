@@ -234,7 +234,7 @@ def main() -> None:
             browser = playwright.chromium.launch()
             page = browser.new_page(viewport={"width": 1440, "height": 1000})
             page.on("console", lambda message: console.append(f"{message.type}: {message.text}"))
-            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.on("pageerror", lambda error: errors.append(f"{getattr(error, 'name', 'Error')}: {getattr(error, 'message', str(error))}\n{getattr(error, 'stack', '')}"))
             page.on("requestfailed", lambda request: failed_requests.append(f"{request.method} {request.url}: {request.failure}"))
             onboard(page)
             entry_id = configure_integration(page)
@@ -250,6 +250,17 @@ def main() -> None:
                 (ARTIFACTS / "browser-console.txt").write_text("\n".join(console), encoding="utf-8")
                 (ARTIFACTS / "browser-errors.json").write_text(json.dumps(errors, indent=2), encoding="utf-8")
                 (ARTIFACTS / "browser-request-failures.txt").write_text("\n".join(failed_requests), encoding="utf-8")
+                startup_state = page.evaluate("""() => {
+                  const app = document.querySelector('home-assistant');
+                  return {
+                    url: location.href,
+                    localStorage: Object.keys(localStorage),
+                    hasHass: Boolean(app?.hass),
+                    appShadowText: app?.shadowRoot?.innerText || '',
+                    appShadowHtml: app?.shadowRoot?.innerHTML || '',
+                  };
+                }""")
+                (ARTIFACTS / "lovelace-startup-state.json").write_text(json.dumps(startup_state, indent=2), encoding="utf-8")
                 raise
             page.wait_for_timeout(5000)
             page.screenshot(path=str(ARTIFACTS / "desktop-light.png"), full_page=True)
