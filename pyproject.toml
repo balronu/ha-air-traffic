@@ -6,5 +6,5 @@ requires-python = ">=3.12"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["custom_components/air_traffic_merge"]
+pythonpath = [".", "custom_components", "custom_components/air_traffic_merge"]
 asyncio_mode = "auto"
