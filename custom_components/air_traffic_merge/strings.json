@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Air Traffic Merge",
+        "title": "Air Traffic",
         "description": "Wähle deinen FR24 Sensor, die ADS-B Quelle (URL oder Entity) und Tracking (Callsign/Registrierung).",
         "data": {
           "source_mode": "Quelle",

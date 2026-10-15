@@ -1,78 +1,84 @@
-# Air Traffic Merge
+# Air Traffic
 
-Home Assistant custom integration for merging Flightradar24 data with local ADS-B data from `readsb`, `tar1090`, or `adsb.im`.
+Home Assistant integration for combining a configured Flightradar24 sensor
+with local ADS-B data from `readsb`, `tar1090`, `adsb.im`, or another sensor
+that exposes an `aircraft` attribute. The Lovelace card is included in the
+integration bundle.
 
-This repository is the HACS-installable version of the working local setup. It supports FR24-only, ADS-B-only, and combined FR24 + ADS-B modes.
+> This Phase 2 candidate is developed locally on `work/air-traffic-modernization`.
+> The target repository `ha-air-traffic` has not been created yet.
 
 ## Features
 
-- Config flow, no YAML setup required
-- Source selection: FR24 sensor, local ADS-B URL, or ADS-B entity
-- Automatic `aircraft.json` URL normalization
+- FR24-only, ADS-B-only, and combined source modes
+- ADS-B by URL or existing Home Assistant sensor
+- Registration/callsign deduplication when a stable identity is available
 - Tracking by callsign, registration, or both
-- Main sensor: `sensor.air_traffic_merged`
-- Tracking helper sensor: `sensor.air_traffic_tracked_count`
-- Tracking binary sensor: `binary_sensor.air_traffic_tracked_present`
-- Events when tracked targets appear or disappear: `air_traffic_merge_tracked`
-- HACS-compatible repository structure
+- Shared `DataUpdateCoordinator` for polling, refresh, unload, and error state
+- Built-in `custom:air-traffic-card` Lovelace card
+- Compatibility alias `custom:air-traffic-merge-card`
+- Versioned, automatically registered frontend bundle
 
-## Install with HACS
+## Installation
 
-1. Open HACS.
-2. Add this repository as a custom repository:
+Install the integration through HACS as an **Integration** once the future
+`balronu/ha-air-traffic` repository is published. This local candidate is not
+published and must not be installed into a productive Home Assistant instance.
 
-   ```text
-   https://github.com/balronu/air-traffic-merge
-   ```
+## Existing technical identifiers
 
-3. Choose category `Integration`.
-4. Install `Air Traffic Merge`.
-5. Restart Home Assistant.
-6. Add the integration from Settings -> Devices & services.
+The internal Home Assistant domain remains `air_traffic_merge` for compatibility.
+Existing entity IDs, config-entry IDs, unique IDs, options, and the event
+`air_traffic_merge_tracked` are intentionally retained. A future domain
+migration requires a separate tested import strategy.
 
-## Configuration
-
-The setup flow asks for:
-
-- Source mode: FR24 only, ADS-B only, or both
-- Optional FR24 sensor with a `flights` attribute
-- ADS-B source as URL or entity
-- Polling interval in seconds
-- Optional tracking configuration
-
-Example ADS-B URL:
-
-```text
-http://192.168.178.186:8080/data/aircraft.json
-```
-
-If you enter only the base URL, the integration appends `/data/aircraft.json`.
-
-## Entities
+The existing entities remain:
 
 - `sensor.air_traffic_merged`
 - `sensor.air_traffic_tracked_count`
 - `binary_sensor.air_traffic_tracked_present`
 
-The main sensor exposes a `flights` attribute for dashboard cards.
+## Lovelace card
 
-## Card Example
+```yaml
+type: custom:air-traffic-card
+entity: sensor.air_traffic_merged
+title: Air Traffic
+show_status: true
+max_items: 50
+```
 
-Use this with the matching dashboard card from `balronu/air-traffic-merge-card`:
+Existing dashboards using this legacy type continue to work:
 
 ```yaml
 type: custom:air-traffic-merge-card
 entity: sensor.air_traffic_merged
-title: Flugzeuge
-show_status: true
-max_items: 25
 ```
 
-## Release Notes
+The integration registers one versioned module URL:
 
-### v1.3.1
+```text
+/air_traffic_merge/air-traffic-card.js?v=1.4.0-beta.1
+```
 
-- Built from the working Home Assistant `/config/custom_components/air_traffic_merge` setup.
-- Fixes the Home Assistant 2026 runtime error caused by `hass.helpers.entity_component.async_update_entity`.
-- Keeps the existing setup flow and entity model compatible with current installations.
-- Updates HACS metadata and GitHub links for `balronu/air-traffic-merge`.
+It does not edit `.storage/lovelace.resources` and does not require a second
+card repository. Static serving and `add_extra_js_url` registration are guarded
+so repeated integration setup does not add duplicate resources.
+
+## Data-source limitations
+
+The integration does not call a Flightradar24 API. FR24 data must already be
+available through the selected Home Assistant sensor with a `flights` list.
+ADS-B URL mode expects a JSON response with an `aircraft` list. Missing fields
+remain missing; the integration does not invent aircraft, coordinates, routes,
+status, or airport data.
+
+## Development checks
+
+```text
+PYTHONPATH=custom_components/air_traffic_merge python3 -m unittest discover -s tests -v
+cd frontend && npm ci && npm test && npm run build
+```
+
+The build output is written to
+`custom_components/air_traffic_merge/frontend/air-traffic-card.js`.

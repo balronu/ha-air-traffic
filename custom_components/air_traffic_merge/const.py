@@ -1,4 +1,7 @@
 DOMAIN = "air_traffic_merge"
+FRONTEND_VERSION = "1.4.0-beta.1"
+FRONTEND_FILENAME = "air-traffic-card.js"
+FRONTEND_URL = f"/{DOMAIN}/{FRONTEND_FILENAME}?v={FRONTEND_VERSION}"
 
 # Source selection
 CONF_SOURCE_MODE = "source_mode"

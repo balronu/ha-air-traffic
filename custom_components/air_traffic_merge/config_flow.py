@@ -273,7 +273,7 @@ class AirTrafficMergeFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if source_mode in (SOURCE_ADSB_ONLY, SOURCE_BOTH):
             data[CONF_SCAN_INTERVAL] = int(data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL))
 
-        return self.async_create_entry(title="Air Traffic Merge", data=data)
+        return self.async_create_entry(title="Air Traffic", data=data)
 
     @staticmethod
     @callback
