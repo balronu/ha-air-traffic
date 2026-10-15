@@ -120,6 +120,7 @@ def onboard(page: Page) -> None:
             # host is not clickable in all Playwright/HA combinations.
             page.mouse.click(720, 242)
             page.wait_for_timeout(300)
+        page.screenshot(path=str(ARTIFACTS / "onboarding-country-open.png"), full_page=True)
         germany = page.get_by_text("Germany", exact=True)
         visible_germany = [germany.nth(i) for i in range(germany.count()) if germany.nth(i).is_visible()]
         if not visible_germany:
