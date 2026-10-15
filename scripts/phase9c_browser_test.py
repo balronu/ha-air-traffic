@@ -233,6 +233,11 @@ def main() -> None:
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch()
             page = browser.new_page(viewport={"width": 1440, "height": 1000})
+            page.add_init_script("""() => {
+              window.__phase9cErrors = [];
+              addEventListener('error', (event) => window.__phase9cErrors.push({type:'error', message:event.message, stack:event.error?.stack || '', source:event.filename}));
+              addEventListener('unhandledrejection', (event) => window.__phase9cErrors.push({type:'unhandledrejection', message:String(event.reason), stack:event.reason?.stack || ''}));
+            }""")
             page.on("console", lambda message: console.append(f"{message.type}: {message.text}"))
             page.on("pageerror", lambda error: errors.append(f"{getattr(error, 'name', 'Error')}: {getattr(error, 'message', str(error))}\n{getattr(error, 'stack', '')}"))
             page.on("requestfailed", lambda request: failed_requests.append(f"{request.method} {request.url}: {request.failure}"))
@@ -252,12 +257,22 @@ def main() -> None:
                 (ARTIFACTS / "browser-request-failures.txt").write_text("\n".join(failed_requests), encoding="utf-8")
                 startup_state = page.evaluate("""() => {
                   const app = document.querySelector('home-assistant');
+                  const tags = [];
+                  const walk = (root) => {
+                    for (const element of root.querySelectorAll('*')) {
+                      if (element.tagName.includes('-')) tags.push(element.tagName.toLowerCase());
+                      if (element.shadowRoot) walk(element.shadowRoot);
+                    }
+                  };
+                  walk(document);
                   return {
                     url: location.href,
                     localStorage: Object.keys(localStorage),
                     hasHass: Boolean(app?.hass),
                     appShadowText: app?.shadowRoot?.innerText || '',
                     appShadowHtml: app?.shadowRoot?.innerHTML || '',
+                    customElements: [...new Set(tags)],
+                    capturedErrors: window.__phase9cErrors || [],
                   };
                 }""")
                 (ARTIFACTS / "lovelace-startup-state.json").write_text(json.dumps(startup_state, indent=2), encoding="utf-8")
