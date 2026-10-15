@@ -12,9 +12,9 @@ Air Traffic is a Home Assistant custom integration that combines an existing
 Flightradar24 sensor with local ADS-B data and ships its Lovelace card in the
 same integration bundle.
 
-> **Current status:** local development candidate on
-> `work/air-traffic-modernization`. The future repository
-> `balronu/ha-air-traffic` has not been created or renamed yet.
+> **Current status:** the repository is now `balronu/ha-air-traffic` and the
+> merged `main` branch is preparing the `1.4.0-beta.1` pre-release. The beta
+> tag and GitHub release are published only after the final isolated card test.
 
 ## Contents
 
@@ -80,13 +80,11 @@ coordinates, routes, airport names or flight status.
 
 ### HACS
 
-The planned HACS source is `balronu/ha-air-traffic`. It is not a published
-repository yet. After explicit publication approval, install **Air Traffic**
-from **HACS → Integrations**, restart Home Assistant, and add it under
-**Settings → Devices & services**.
-
-Do not install the future target URL before it exists. Until publication, use
-the local development workflow only.
+The HACS source is `balronu/ha-air-traffic`. After the `1.4.0-beta.1`
+pre-release is published, install **Air Traffic** from
+**HACS → Integrations**, restart Home Assistant, and add it under
+**Settings → Devices & services**. Until then, use the local development
+workflow or manual installation.
 
 ### Manual installation
 
@@ -165,8 +163,8 @@ automatically. See [the Phase 4 migration guide](docs/PHASE4-MIGRATION.md).
 
 Back up Home Assistant before updating. After an update, verify the main entity,
 the card and the source status. The bundle URL contains a version query string
-so browsers can refresh it after a frontend update. No release has been
-published from this local candidate.
+so browsers can refresh it after a frontend update. The beta release is
+published only after the isolated Lovelace test gate passes.
 
 ## Troubleshooting
 
