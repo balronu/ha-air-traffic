@@ -6,7 +6,7 @@
   <img src="images/branding/air-traffic-readme-banner.png" alt="Air Traffic – Home Assistant integration with built-in Lovelace card">
 </p>
 
-<p align="center"><a href="README.de.md">🇩🇪 Deutsch</a> | 🇬🇧 English</p>
+<p align="center"><a href="README.md">🇩🇪 Deutsch</a> | 🇬🇧 <strong>English</strong></p>
 
 # Air Traffic
 

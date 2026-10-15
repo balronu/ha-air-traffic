@@ -6,7 +6,7 @@
   <img src="images/branding/air-traffic-readme-banner.png" alt="Air Traffic – Home-Assistant-Integration mit integrierter Lovelace-Karte">
 </p>
 
-<p align="center">🇩🇪 Deutsch | <a href="README.md">🇬🇧 English</a></p>
+<p align="center">🇩🇪 <strong>Deutsch</strong> | <a href="README.en.md">🇬🇧 English</a></p>
 
 # Air Traffic
 
