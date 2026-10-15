@@ -32,6 +32,14 @@ def write_test_config() -> None:
         """homeassistant:\n  name: Phase 9B Isolated HA\n\ndefault_config:\n\nhttp:\n  server_port: 8123\n\nlogger:\n  default: info\n  logs:\n    custom_components.air_traffic_merge: debug\n\nfrontend:\n\nlovelace:\n  mode: yaml\n\ntemplate:\n  - sensor:\n      - name: ADS-B Feed\n        unique_id: phase9b_adsb_feed\n        state: "2"\n        attributes:\n          aircraft:\n            - hex: abc123\n              flight: TEST123\n              lat: 50.0\n              lon: 8.0\n              alt_baro: 12000\n              gs: 410\n              track: 90\n            - hex: def456\n              flight: TEST456\n              lat: 50.2\n              lon: 8.2\n              alt_baro: 9000\n              gs: 320\n              track: 180\n          messages: 7\n          now: 1700000000\n      - name: FR24 Feed\n        unique_id: phase9b_fr24_feed\n        state: "1"\n        attributes:\n          flights:\n            - hex: fr24123\n              callsign: FR24123\n              registration: D-TEST\n              latitude: 51.0\n              longitude: 9.0\n              altitude: 11000\n              speed: 400\n      - name: Air Traffic Empty Fixture\n        unique_id: phase9b_empty\n        state: "0"\n        attributes:\n          flights: []\n          adsb_count: 0\n          fr24_count: 0\n          merged_count: 0\n      - name: Air Traffic Error Fixture\n        unique_id: phase9b_error\n        state: "0"\n        attributes:\n          flights: []\n          source_errors:\n            adsb: "Mock source error"\n      - name: Air Traffic Stale Fixture\n        unique_id: phase9b_stale\n        state: "1"\n        attributes:\n          flights:\n            - callsign: STALE1\n              hex: stale1\n          data_stale: true\n\ninput_number:\n  adsb_lat:\n    min: 0\n    max: 90\n    step: 0.1\n    initial: 50.0\n""",
         encoding="utf-8",
     )
+    config_path = CONFIG / "configuration.yaml"
+    config_path.write_text(
+        config_path.read_text(encoding="utf-8").replace(
+            "default_config:\\n\\n",
+            "config:\\nfrontend:\\napi:\\nauth:\\nonboarding:\\nwebsocket_api:\\nlovelace:\\n\\n",
+        ),
+        encoding="utf-8",
+    )
     (CONFIG / "ui-lovelace.yaml").write_text(
         """title: Phase 9B Air Traffic\nviews:\n  - title: Air Traffic\n    path: air-traffic\n    cards:\n      - type: custom:air-traffic-card\n        entity: sensor.air_traffic_merged\n        title: Modern Air Traffic\n        max_items: 25\n      - type: custom:air-traffic-merge-card\n        entity: sensor.air_traffic_merged\n        title: Legacy Air Traffic\n        max_items: 25\n      - type: custom:air-traffic-card\n        entity: sensor.air_traffic_empty_fixture\n        title: Empty Fixture\n      - type: custom:air-traffic-card\n        entity: sensor.air_traffic_error_fixture\n        title: Error Fixture\n      - type: custom:air-traffic-card\n        entity: sensor.air_traffic_stale_fixture\n        title: Stale Fixture\n""",
         encoding="utf-8",
@@ -77,7 +85,15 @@ def onboard(page: Page) -> None:
         locator = page.locator(selector)
         if locator.count():
             locator.fill(value)
-    first_visible(page, ["button:has-text('Create account')", "button:has-text('Konto erstellen')"]).click()
+    page.screenshot(path=str(ARTIFACTS / "onboarding-before-submit.png"), full_page=True)
+    candidates = page.get_by_role("button", name=re.compile(r"Create account|Konto erstellen|Submit|Absenden", re.I))
+    if not candidates.count():
+        candidates = page.locator("ha-button, mwc-button, button")
+    visible = [candidates.nth(i) for i in range(candidates.count()) if candidates.nth(i).is_visible()]
+    if not visible:
+        (ARTIFACTS / "onboarding.html").write_text(page.content(), encoding="utf-8")
+        raise AssertionError(f"Onboarding submit control not found; visible text: {page.locator('body').inner_text()[:2000]}")
+    visible[-1].click()
     page.wait_for_timeout(700)
     for _ in range(4):
         buttons = page.locator("button")
