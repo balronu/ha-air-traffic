@@ -12,9 +12,10 @@ Air Traffic ist eine Home-Assistant-Integration, die einen vorhandenen
 Flightradar24-Sensor mit lokalen ADS-B-Daten zusammenführt und die Lovelace-
 Karte im selben Integrations-Bundle mitliefert.
 
-> **Status:** lokaler Entwicklungsstand auf
-> `work/air-traffic-modernization`. Das zukünftige Repository
-> `balronu/ha-air-traffic` wurde noch nicht erstellt oder umbenannt.
+> **Status:** Das Repository heißt jetzt `balronu/ha-air-traffic`; der gemergte
+> `main`-Branch bereitet das Pre-Release `1.4.0-beta.1` vor. Tag und GitHub-
+> Release werden erst nach dem abschließenden isolierten Kartentest
+> veröffentlicht.
 
 ## Inhalt
 
@@ -75,12 +76,11 @@ erfunden.
 
 ### HACS
 
-Die geplante Quelle ist `balronu/ha-air-traffic`. Sie ist noch nicht
-veröffentlicht. Nach ausdrücklicher Freigabe in **HACS → Integrationen** nach
-**Air Traffic** suchen, installieren, Home Assistant neu starten und die
-Integration unter **Einstellungen → Geräte & Dienste** hinzufügen.
-
-Die zukünftige URL darf vor ihrer Veröffentlichung nicht installiert werden.
+Die HACS-Quelle ist `balronu/ha-air-traffic`. Nach Veröffentlichung des
+Pre-Releases `1.4.0-beta.1` in **HACS → Integrationen** nach **Air Traffic**
+suchen, installieren, Home Assistant neu starten und die Integration unter
+**Einstellungen → Geräte & Dienste** hinzufügen. Bis dahin die lokale
+Entwicklung oder die manuelle Installation verwenden.
 
 ### Manuelle Installation
 
@@ -154,7 +154,8 @@ automatisch gelöscht. Siehe den [Phase-4-Migrationsleitfaden](docs/PHASE4-MIGRA
 
 Vorher ein Home-Assistant-Backup erstellen. Danach die zentrale Entity, die
 Karte und den Quellstatus prüfen. Die Bundle-URL enthält eine Versionsabfrage.
-Aus diesem lokalen Kandidaten wurde noch kein Release veröffentlicht.
+Das Beta-Release wird erst nach erfolgreichem isoliertem Lovelace-Kartentest
+veröffentlicht.
 
 ## Fehlerbehebung
 
