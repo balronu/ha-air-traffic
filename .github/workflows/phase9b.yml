@@ -1,11 +1,11 @@
-name: Phase 9C Lovelace validation
+name: Phase 9D Lovelace browser validation
 
 on:
   pull_request:
     paths:
       - "custom_components/**"
       - "frontend/**"
-      - "scripts/phase9c_browser_test.py"
+      - "scripts/phase9d_browser_test.py"
       - ".github/workflows/phase9b.yml"
   workflow_dispatch:
 
@@ -63,13 +63,13 @@ jobs:
           git diff --exit-code -- ../custom_components/air_traffic_merge/frontend/air-traffic-card.js
 
       - name: Run isolated Home Assistant and real-browser validation
-        run: python scripts/phase9c_browser_test.py
+        run: python scripts/phase9d_browser_test.py
 
       - name: Upload Phase 9B evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: phase9c-lovelace-evidence
-          path: phase9c-artifacts/
+          name: phase9d-lovelace-evidence
+          path: phase9d-artifacts/
           if-no-files-found: warn
           retention-days: 14
