@@ -1,155 +1,157 @@
 <p align="center">
-  <img src="images/branding/air-traffic-logo.png" alt="Air Traffic logo" width="160">
+  <img src="images/branding/air-traffic-logo.png" alt="Air-Traffic-Logo" width="160">
 </p>
 
 <p align="center">
-  <img src="images/branding/air-traffic-readme-banner.png" alt="Air Traffic – Home Assistant integration with built-in Lovelace card">
+  <img src="images/branding/air-traffic-readme-banner.png" alt="Air Traffic – Home-Assistant-Integration mit integrierter Lovelace-Karte">
 </p>
 
-<p align="center"><a href="README.de.md">🇩🇪 Deutsch</a> | 🇬🇧 English</p>
+<p align="center">🇩🇪 Deutsch | <a href="README.md">🇬🇧 English</a></p>
 
 # Air Traffic
 
-Air Traffic is a Home Assistant custom integration for combining a
-Flightradar24 sensor with local ADS-B data. It normalizes both inputs,
-suppresses duplicates, exposes stable Home Assistant entities, and serves a
-responsive Lovelace card from the same integration.
+Air Traffic ist eine benutzerdefinierte Home-Assistant-Integration, die einen
+Flightradar24-Sensor mit lokalen ADS-B-Daten zusammenführt. Beide Quellen
+werden normalisiert und doppelte Flugzeuge unterdrückt. Die Integration stellt
+stabile Home-Assistant-Entities bereit und liefert die responsive Lovelace-
+Karte im selben Integrationspaket.
 
-> **Release status:** Stable `v1.3.1` is the latest published release.
-> `1.4.0-beta.1` is prepared but not published. The isolated Lovelace browser
-> validation is still open; this README does not present the unreleased beta as
-> generally available.
+> **Release-Status:** Die zuletzt veröffentlichte stabile Version ist `v1.3.1`.
+> `1.4.0-beta.1` ist vorbereitet, aber noch nicht veröffentlicht. Die isolierte
+> Lovelace-Browserprüfung ist noch offen; diese README stellt die
+> unveröffentlichte Beta nicht als allgemein verfügbar dar.
 
-## Contents
+## Inhalt
 
-- [Features](#features)
-- [Supported sources](#supported-sources)
-- [Requirements](#requirements)
+- [Funktionen](#funktionen)
+- [Unterstützte Quellen](#unterstützte-quellen)
+- [Voraussetzungen](#voraussetzungen)
 - [Installation](#installation)
-- [Configuration](#configuration)
-- [Entities and attributes](#entities-and-attributes)
-- [Lovelace card](#lovelace-card)
+- [Konfiguration](#konfiguration)
+- [Entities und Attribute](#entities-und-attribute)
+- [Lovelace-Karte](#lovelace-karte)
 - [Migration](#migration)
-- [Updating](#updating)
-- [Troubleshooting](#troubleshooting)
-- [Privacy and limitations](#privacy-and-limitations)
-- [Contributing](#contributing)
-- [License](#license)
+- [Aktualisierung](#aktualisierung)
+- [Fehlerbehebung](#fehlerbehebung)
+- [Datenschutz und Einschränkungen](#datenschutz-und-einschränkungen)
+- [Mitwirkung](#mitwirkung)
+- [Lizenz](#lizenz)
 
-## Features
+## Funktionen
 
-- FR24-only, ADS-B-only, or combined source mode
-- ADS-B from a URL returning `aircraft.json`
-- ADS-B from an existing Home Assistant sensor with an `aircraft` attribute
-- Normalization, duplicate suppression, and source merging
-- Optional tracking by callsign, registration, or both
-- One shared `DataUpdateCoordinator` with retry/backoff for ADS-B URLs
-- Invalid coordinates and stale ADS-B positions are represented safely
-- Built-in responsive card with empty, error, unavailable, and stale states
-- Aircraft selection and a detail view
-- New and legacy Lovelace custom-element names in one bundle
+- Nur FR24, nur ADS-B oder kombinierter Quellenmodus
+- ADS-B über eine URL mit `aircraft.json`
+- ADS-B über eine vorhandene Home-Assistant-Entity mit Attribut `aircraft`
+- Normalisierung, Duplikaterkennung und Quellen-Zusammenführung
+- Optionales Tracking nach Callsign, Registrierung oder beidem
+- Gemeinsamer `DataUpdateCoordinator` mit Wiederholungen für ADS-B-URLs
+- Ungültige Koordinaten und veraltete ADS-B-Positionen werden sicher behandelt
+- Integrierte responsive Karte mit Leer-, Fehler-, Nichtverfügbar- und Stale-Zuständen
+- Flugzeugauswahl und Detailansicht
+- Neuer und Legacy-Lovelace-Elementname im selben Bundle
 
-## Supported sources
+## Unterstützte Quellen
 
-| Source | Required data | Notes |
+| Quelle | Erforderliche Daten | Hinweise |
 |---|---|---|
-| Flightradar24 entity | Sensor attribute `flights` containing a list | Air Traffic does not call the FR24 API or handle FR24 credentials. |
-| ADS-B URL | JSON object with an `aircraft` list | Host URLs are normalized to `/data/aircraft.json`; HTTP failures and timeouts are retried. |
-| ADS-B entity | Sensor attribute `aircraft` containing a list | Optional `messages` and `now` attributes are retained. |
+| Flightradar24-Entity | Sensorattribut `flights` als Liste | Air Traffic ruft keine FR24-API auf und verwaltet keine FR24-Zugangsdaten. |
+| ADS-B-URL | JSON-Objekt mit einer Liste `aircraft` | Bei einer Host-URL wird `/data/aircraft.json` ergänzt; HTTP-Fehler und Timeouts werden wiederholt. |
+| ADS-B-Entity | Sensorattribut `aircraft` als Liste | Die optionalen Attribute `messages` und `now` werden übernommen. |
 
-The integration accepts common FR24/readsb/tar1090 field names and normalizes
-callsign, registration, ICAO/hex, altitude, speed, heading, coordinates,
-distance, category, squawk, and position age where supplied. Missing values are
-left empty; they are not inferred.
+Die Integration versteht gängige Feldnamen von FR24/readsb/tar1090 und
+normalisiert, soweit vorhanden, Callsign, Registrierung, ICAO/Hex, Höhe,
+Geschwindigkeit, Kurs, Koordinaten, Entfernung, Kategorie, Squawk und
+Positionsalter. Fehlende Werte werden nicht erfunden.
 
-## Requirements
+## Voraussetzungen
 
-- Home Assistant with custom integrations enabled
-- HACS, or permission to install a custom component manually
-- At least one supported source
-- Network access from Home Assistant to the ADS-B URL in URL mode
+- Home Assistant mit aktivierten benutzerdefinierten Integrationen
+- HACS oder die Möglichkeit zur manuellen Installation
+- Mindestens eine unterstützte Quelle
+- Netzwerkzugriff von Home Assistant auf die ADS-B-URL im URL-Modus
 
-The published stable release should be used for normal installations. The
-`main` branch and `1.4.0-beta.1` are development candidates until the beta
-validation gates are complete.
+Für normale Installationen sollte die veröffentlichte stabile Version verwendet
+werden. `main` und `1.4.0-beta.1` sind Entwicklungskandidaten, solange die
+Beta-Prüfungen nicht abgeschlossen sind.
 
 ## Installation
 
 ### HACS
 
-1. Open **HACS → Integrations**.
-2. Search for **Air Traffic** or add the repository
-   [`balronu/ha-air-traffic`](https://github.com/balronu/ha-air-traffic) as a
-   custom repository of type **Integration**.
-3. Install the latest published release.
-4. Restart Home Assistant.
-5. Add **Air Traffic** under **Settings → Devices & services → Add integration**.
+1. **HACS → Integrationen** öffnen.
+2. Nach **Air Traffic** suchen oder das Repository
+   [`balronu/ha-air-traffic`](https://github.com/balronu/ha-air-traffic) als
+   benutzerdefiniertes Repository vom Typ **Integration** hinzufügen.
+3. Die zuletzt veröffentlichte Version installieren.
+4. Home Assistant neu starten.
+5. Unter **Einstellungen → Geräte & Dienste → Integration hinzufügen** **Air
+   Traffic** hinzufügen.
 
-The public repository was renamed from `air-traffic-merge` to `ha-air-traffic`.
-The technical Home Assistant domain and integration directory intentionally
-remain `air_traffic_merge` for compatibility. An existing installation should
-be updated, not deleted and recreated solely because the repository name
-changed.
+Das öffentliche Repository wurde von `air-traffic-merge` in `ha-air-traffic`
+umbenannt. Die technische Home-Assistant-Domain und das Integrationsverzeichnis
+bleiben aus Kompatibilitätsgründen `air_traffic_merge`. Eine bestehende
+Installation sollte aktualisiert und nicht nur wegen des Repository-Namens
+gelöscht und neu angelegt werden.
 
-### Manual installation
+### Manuelle Installation
 
-Copy `custom_components/air_traffic_merge` into
-`/config/custom_components/air_traffic_merge/` and restart Home Assistant.
-Manual installation is useful for development, but HACS is recommended for
-published releases.
+`custom_components/air_traffic_merge` nach
+`/config/custom_components/air_traffic_merge/` kopieren und Home Assistant neu
+starten. Für veröffentlichte Versionen wird HACS empfohlen.
 
-## Configuration
+## Konfiguration
 
-Open **Settings → Devices & services → Add integration**, select **Air Traffic**,
-and choose a source mode:
+Unter **Einstellungen → Geräte & Dienste → Integration hinzufügen** **Air
+Traffic** auswählen und einen Quellenmodus wählen:
 
-| Flow step | Available settings |
+| Flow-Schritt | Verfügbare Einstellungen |
 |---|---|
-| Source | FR24 only, ADS-B only, or both; tracking enabled/disabled |
-| FR24 sensor | A sensor entity whose attributes contain `flights` |
-| ADS-B source | URL (`aircraft.json`) or an existing sensor entity |
-| ADS-B URL | URL; a host URL receives the `/data/aircraft.json` suffix |
-| ADS-B entity | A sensor entity whose attributes contain `aircraft` |
-| Tracking mode | Callsign, registration, or both |
-| Tracking values | Comma-separated callsigns and/or registrations |
+| Quelle | Nur FR24, nur ADS-B oder beide; Tracking an/aus |
+| FR24-Sensor | Sensor-Entity mit dem Attribut `flights` |
+| ADS-B-Quelle | URL (`aircraft.json`) oder bestehende Sensor-Entity |
+| ADS-B-URL | URL; bei Host-URLs wird `/data/aircraft.json` ergänzt |
+| ADS-B-Entity | Sensor-Entity mit dem Attribut `aircraft` |
+| Tracking-Modus | Callsign, Registrierung oder beides |
+| Tracking-Werte | Kommagetrennte Callsigns und/oder Registrierungen |
 
-For ADS-B sources, the polling interval is clamped to a minimum of five
-seconds. The default is ten seconds. The Options flow lets you change the
-interval and enable/disable tracking; when tracking is enabled it also exposes
-the tracking mode and values.
+Bei ADS-B-Quellen beträgt das Mindestintervall fünf Sekunden, standardmäßig
+sind es zehn Sekunden. Der Options Flow ändert Intervall und Tracking. Wenn
+Tracking aktiviert ist, werden dort zusätzlich Modus und Werte angezeigt.
 
-## Entities and attributes
+## Entities und Attribute
 
-Entity IDs are normally generated from the entity names. Existing IDs and
-unique IDs are part of the compatibility contract and must not be renamed.
+Die Entity IDs werden normalerweise aus den Entity-Namen gebildet. Bestehende
+IDs und Unique IDs sind Teil des Kompatibilitätsvertrags und dürfen nicht
+umbenannt werden.
 
-| Entity | Purpose |
+| Entity | Zweck |
 |---|---|
-| `sensor.air_traffic_merged` | Number of merged aircraft and the complete normalized snapshot |
-| `sensor.air_traffic_tracked_count` | Number of currently tracked aircraft |
-| `binary_sensor.air_traffic_tracked_present` | On while at least one tracked aircraft is present |
+| `sensor.air_traffic_merged` | Anzahl zusammengeführter Flugzeuge und vollständiger normalisierter Snapshot |
+| `sensor.air_traffic_tracked_count` | Anzahl aktuell verfolgter Flugzeuge |
+| `binary_sensor.air_traffic_tracked_present` | Ein, solange mindestens ein verfolgtes Flugzeug vorhanden ist |
 
-The merged sensor exposes these attributes:
+Der zusammengeführte Sensor besitzt die Attribute:
 
 `last_update`, `flights`, `aircraft`, `messages`, `now`, `fr24_count`,
 `adsb_count`, `merged_count`, `tracking_enabled`, `tracked_active_count`,
-`matched_callsigns`, `matched_registrations`, `source_errors`, and `data_stale`.
+`matched_callsigns`, `matched_registrations`, `source_errors` und `data_stale`.
 
-Each normalized item in `flights` can contain `key`, `registration`, `hex`,
+Jedes normalisierte Element in `flights` kann `key`, `registration`, `hex`,
 `callsign`, `source`, `aircraft_model`, `airline`, `alt_m`, `spd_kmh`,
 `dist_km`, `dir_deg`, `latitude`, `longitude`, `position_age_s`,
-`position_stale`, `category`, `squawk`, `tracked`, `tracked_by`, and
-`tracked_target`. Fields depend on the source data.
+`position_stale`, `category`, `squawk`, `tracked`, `tracked_by` und
+`tracked_target` enthalten. Welche Felder vorhanden sind, hängt von der Quelle
+ab.
 
-The tracked-count sensor and binary sensor expose tracking state plus matched
-callsigns/registrations. When a source fails, the last source data is retained,
-`source_errors` is populated, and `data_stale` becomes `true`.
+Der Tracking-Zähler und der Binary-Sensor liefern zusätzlich Trackingstatus und
+getroffene Callsigns/Registrierungen. Bei einem Quellfehler bleiben die letzten
+Quelldaten erhalten, `source_errors` wird gesetzt und `data_stale` wird `true`.
 
-## Lovelace card
+## Lovelace-Karte
 
-The integration automatically serves and registers its versioned bundle. A new
-installation does not need a separate card repository or a manually added
-resource:
+Die Integration stellt ihr versioniertes Bundle automatisch bereit und
+registriert es. Bei einer neuen Installation ist kein separates Karten-
+Repository und keine manuelle Ressource nötig:
 
 ```yaml
 type: custom:air-traffic-card
@@ -162,7 +164,7 @@ max_items: 25
 compact: false
 ```
 
-Existing dashboards may keep using the compatible legacy name:
+Bestehende Dashboards dürfen den kompatiblen Legacy-Namen behalten:
 
 ```yaml
 type: custom:air-traffic-merge-card
@@ -171,90 +173,93 @@ title: Air Traffic
 max_items: 25
 ```
 
-Both names use the same implementation. The card shows source counts, aircraft
-rows, normalized metrics, stale/error state, and a selectable detail view. Its
-layout changes from four metric columns to two on narrow cards. Home Assistant
-theme variables are used, so light and dark themes are supported by the card's
-CSS.
+Beide Namen verwenden dieselbe Implementierung. Die Karte zeigt Quellzähler,
+Flugzeugzeilen, normalisierte Werte, Stale-/Fehlerzustände und eine auswählbare
+Detailansicht. Auf schmalen Karten wechselt das Layout von vier auf zwei
+Metrikspalten. Für helle und dunkle Themes werden Home-Assistant-Variablen
+verwendet.
 
-### Card options
+### Kartenoptionen
 
-| Option | Default | Meaning |
+| Option | Standard | Bedeutung |
 |---|---:|---|
-| `entity` | required | Entity whose `flights` attribute is displayed |
-| `title` | `Air Traffic` | Card heading |
-| `show_status` | `true` | Show FR24, ADS-B, and merged counts |
-| `show_debug` | `false` | Show the raw entity attributes as JSON |
-| `show_counts` | `false` | Show `attributes.counts` when a source provides it; Air Traffic does not create this attribute itself |
-| `max_items` | `25` | Maximum number of displayed flights |
-| `compact` | `false` | Use the compact card-size hint |
+| `entity` | erforderlich | Entity, deren Attribut `flights` angezeigt wird |
+| `title` | `Air Traffic` | Überschrift |
+| `show_status` | `true` | FR24-, ADS-B- und Zusammenführungszähler anzeigen |
+| `show_debug` | `false` | Rohe Entity-Attribute als JSON anzeigen |
+| `show_counts` | `false` | `attributes.counts` anzeigen, falls eine Quelle es liefert; Air Traffic erzeugt dieses Attribut selbst nicht |
+| `max_items` | `25` | Maximale Zahl angezeigter Flüge |
+| `compact` | `false` | Hinweis für kompakte Kartenhöhe |
 
-The bundle is registered under the internal path
-`/air_traffic_merge/air-traffic-card.js`. The integration registers it once and
-does not write dashboards or `.storage/lovelace.resources`.
+Das Bundle liegt unter dem technischen Pfad
+`/air_traffic_merge/air-traffic-card.js`. Die Integration registriert es genau
+einmal und schreibt weder Dashboards noch `.storage/lovelace.resources`.
 
 ## Migration
 
-The rename from **Air Traffic Merge** to **Air Traffic** is a public naming and
-repository change, not a Home Assistant domain migration:
+Die Umbenennung von **Air Traffic Merge** zu **Air Traffic** betrifft den
+öffentlichen Namen und das Repository, nicht die technische Home-Assistant-
+Domain:
 
-- Keep `air_traffic_merge` in the custom-component path and manifest.
-- Keep existing Config Entries, entity IDs, unique IDs, and options.
-- Update the existing HACS repository/install instead of creating a second
-  integration entry.
-- Keep `custom:air-traffic-merge-card` until the new bundle has been checked.
-- Only change a dashboard copy to `custom:air-traffic-card` after verification.
+- `air_traffic_merge` in Integrationspfad und Manifest behalten.
+- Bestehende Config Entries, Entity IDs, Unique IDs und Optionen behalten.
+- Bestehende HACS-Installation aktualisieren, nicht eine zweite Entity anlegen.
+- `custom:air-traffic-merge-card` behalten, bis das neue Bundle geprüft wurde.
+- Erst nach Prüfung eine Dashboard-Kopie auf `custom:air-traffic-card` umstellen.
 
-The former standalone card repository is not automatically removed. Do not
-delete its Lovelace resource or archive the old repository solely because the
-new integration bundles a card. That cleanup requires a separately verified
-migration and user decision.
+Das frühere separate Kartenrepository wird nicht automatisch entfernt. Die
+Lovelace-Ressource darf nicht allein deshalb gelöscht und das alte Repository
+nicht allein deshalb archiviert werden, weil nun eine Karte integriert ist.
+Diese Bereinigung braucht eine separat verifizierte Migration und eine bewusste
+Entscheidung.
 
-## Updating
+## Aktualisierung
 
-1. Create a Home Assistant backup.
-2. Update Air Traffic through HACS to the desired published release.
-3. Restart Home Assistant when HACS requests it.
-4. Confirm the existing Config Entry and the three Air Traffic entities.
-5. Open an existing dashboard and check the current or legacy card.
+1. Ein Home-Assistant-Backup erstellen.
+2. Air Traffic in HACS auf die gewünschte veröffentlichte Version aktualisieren.
+3. Home Assistant neu starten, wenn HACS dazu auffordert.
+4. Bestehenden Config Entry und die drei Air-Traffic-Entities prüfen.
+5. Ein bestehendes Dashboard öffnen und die aktuelle oder Legacy-Karte prüfen.
 
-The current development version is not a published beta. Do not install it in
-production merely because the version is visible in the source manifest.
+Die aktuelle Entwicklungsversion ist keine veröffentlichte Beta. Sie sollte
+nicht allein deshalb produktiv installiert werden, weil die Versionsnummer im
+Manifest sichtbar ist.
 
-## Troubleshooting
+## Fehlerbehebung
 
-- **No aircraft:** check that the selected entity has a list-valued `flights`
-  or `aircraft` attribute and that its state is not `unknown`/`unavailable`.
-- **ADS-B URL error:** open the normalized URL from the Home Assistant host and
-  confirm that it returns JSON with an `aircraft` list.
-- **Stale source warning:** inspect `source_errors` and `data_stale` on
-  `sensor.air_traffic_merged`; the last valid source data may still be shown.
-- **Card not found:** reload the Home Assistant frontend and verify that the
-  integration is loaded. Keep the old card resource until the new bundle is
-  proven in the target installation.
-- **Unexpected empty fields:** input schemas differ between providers; missing
-  fields are intentionally not fabricated.
+- **Keine Flugzeuge:** Prüfen, ob die gewählte Entity ein Listenattribut
+  `flights` oder `aircraft` liefert und nicht `unknown`/`unavailable` ist.
+- **ADS-B-URL-Fehler:** Die normalisierte URL vom HA-Host öffnen und JSON mit
+  einer `aircraft`-Liste prüfen.
+- **Warnung wegen veralteter Daten:** `source_errors` und `data_stale` von
+  `sensor.air_traffic_merged` prüfen; die letzten gültigen Quelldaten können
+  weiterhin angezeigt werden.
+- **Karte nicht gefunden:** Home-Assistant-Frontend neu laden und prüfen, ob
+  die Integration geladen ist. Alte Kartenressource erst entfernen, wenn das
+  neue Bundle in der Zielinstallation nachweislich funktioniert.
+- **Fehlende Werte:** Die Quellformate unterscheiden sich; fehlende Werte
+  werden absichtlich nicht erfunden.
 
-## Privacy and limitations
+## Datenschutz und Einschränkungen
 
-Air Traffic reads the configured Home Assistant entities and, in URL mode,
-fetches the configured ADS-B endpoint locally. It does not provide a FR24 cloud
-login, proxy credentials, map service, or flight-status enrichment. Provider
-terms, rate limits, and any network exposure of a local ADS-B endpoint remain
-the user's responsibility.
+Air Traffic liest die konfigurierten Home-Assistant-Entities und ruft im
+URL-Modus den konfigurierten ADS-B-Endpunkt ab. Es gibt keinen FR24-Cloud-Login,
+keinen Credential-Proxy, keinen Kartendienst und keine Anreicherung von
+Flugstatusdaten. Bedingungen, Rate-Limits und Netzwerkschutz der jeweiligen
+Quelle bleiben Verantwortung des Nutzers.
 
-The card is a responsive list/detail card, not a geographic map. The exact
-fields available depend on the configured source. Functional screenshots are
-not included because no verified productive screenshot is available; the
-repository images are branding assets only.
+Die Karte ist eine responsive Liste mit Detailansicht, keine geografische Karte.
+Der genaue Feldumfang hängt von der Quelle ab. Funktions-Screenshots sind nicht
+eingebunden, weil kein verifizierter produktiver Screenshot vorliegt; die Bilder
+im Repository sind ausschließlich Branding-Assets.
 
-## Contributing
+## Mitwirkung
 
-Read [`CONTRIBUTING.md`](CONTRIBUTING.md) before opening an issue or pull
-request. Include the Home Assistant version, Air Traffic version, source mode,
-minimal card YAML, and redacted logs. Never publish tokens, API keys, private
-URLs, or precise personal location data.
+Vor Issue oder Pull Request bitte [`CONTRIBUTING.md`](CONTRIBUTING.md) lesen.
+Home-Assistant-Version, Air-Traffic-Version, Quellenmodus, minimales Karten-
+YAML und anonymisierte Logs angeben. Niemals Tokens, API-Schlüssel, private URLs
+oder genaue persönliche Standortdaten veröffentlichen.
 
-## License
+## Lizenz
 
-Air Traffic is released under the [MIT License](LICENSE).
+Air Traffic steht unter der [MIT-Lizenz](LICENSE).
