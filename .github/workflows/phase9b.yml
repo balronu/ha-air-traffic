@@ -36,10 +36,13 @@ jobs:
             "homeassistant==2026.10.1" \
             "home-assistant-frontend==20260930.3" \
             "ha-ffmpeg==3.2.2" \
+            "gazetteer-matcher==1.1.0" \
             "hassil==3.12.1" \
             "infrared-protocols==10.1.0" \
             "mutagen==1.48.1" \
+            "PyMetno==0.13.0" \
             "PyTurboJPEG==1.8.3" \
+            "radios==1.0.0" \
             "rf-protocols==4.3.0" \
             "pytest==9.0.3" \
             "pytest-asyncio==1.4.0" \
