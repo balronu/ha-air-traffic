@@ -115,6 +115,11 @@ def onboard(page: Page) -> None:
         else:
             country.first.click(force=True)
         page.wait_for_timeout(300)
+        if not page.get_by_text("Germany", exact=True).count():
+            # HA renders the onboarding selector in a web component whose
+            # host is not clickable in all Playwright/HA combinations.
+            page.mouse.click(720, 242)
+            page.wait_for_timeout(300)
         germany = page.get_by_text("Germany", exact=True)
         if germany.count() and germany.first.is_visible():
             germany.first.click(force=True)
