@@ -62,7 +62,7 @@ template:
       - name: Air Traffic Stale Fixture
         unique_id: phase9d_stale
         state: "1"
-        attributes: {flights: "{{ [{'callsign': 'STALE1', 'hex': 'stale1'}] }}", data_stale: true}
+        attributes: {flights: "{{ [{'callsign': 'STALE1', 'hex': 'stale1'}] }}", data_stale: "{{ true }}"}
 input_number:
   adsb_lat:
     min: 0
@@ -190,7 +190,7 @@ def main() -> None:
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(); page = browser.new_page(viewport={"width": 1440, "height": 1000})
             page.add_init_script("""() => { window.__phase9dErrors = []; addEventListener('error', e => window.__phase9dErrors.push({type:'error', message:e.message, stack:e.error?.stack || '', source:e.filename})); addEventListener('unhandledrejection', e => window.__phase9dErrors.push({type:'unhandledrejection', message:String(e.reason), stack:e.reason?.stack || ''})); }""")
-            page.on("console", lambda message: console.append(f"{message.type}: {message.text}")); page.on("pageerror", lambda error: errors.append(f"{getattr(error, 'name', 'Error')}: {getattr(error, 'message', str(error))}\n{getattr(error, 'stack', '')}")); page.on("requestfailed", lambda request: requests.append(f"{request.method} {request.url}: {request.failure}")); page.on("response", lambda response: requests.append(f"HTTP {response.status} {response.request.method} {response.url}") if response.status >= 400 else None)
+            page.on("console", lambda message: console.append(f"{message.type}: {message.text}")); page.on("pageerror", lambda error: errors.append(json.dumps({"repr": repr(error), "name": getattr(error, "name", None), "message": getattr(error, "message", None), "stack": getattr(error, "stack", None)}, default=str))); page.on("requestfailed", lambda request: requests.append(f"{request.method} {request.url}: {request.failure}")); page.on("response", lambda response: requests.append(f"HTTP {response.status} {response.request.method} {response.url}") if response.status >= 400 else None)
             page.on("websocket", lambda socket: (websockets.append(f"OPEN {socket.url}"), socket.on("framereceived", lambda payload: websockets.append(f"RECV {socket.url} {str(payload)[:500]}")), socket.on("framesent", lambda payload: websockets.append(f"SEND {socket.url} {str(payload)[:500]}")), socket.on("close", lambda: websockets.append(f"CLOSE {socket.url}"))))
             onboard(page)
             page.goto(BASE_URL + "/lovelace/empty", wait_until="networkidle"); page.wait_for_selector("hui-view", timeout=60000); page.screenshot(path=str(ARTIFACTS / "01-empty-lovelace.png"), full_page=True); assert page.locator("air-traffic-card").count() == 0
