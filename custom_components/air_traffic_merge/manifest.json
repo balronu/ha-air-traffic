@@ -5,6 +5,7 @@
   "documentation": "https://github.com/balronu/ha-air-traffic",
   "issue_tracker": "https://github.com/balronu/ha-air-traffic/issues",
   "requirements": [],
+  "dependencies": ["http"],
   "codeowners": ["@balronu"],
   "config_flow": true,
   "integration_type": "service",

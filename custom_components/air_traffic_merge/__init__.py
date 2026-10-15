@@ -8,11 +8,13 @@ from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import config_validation as cv
 
 from .const import DOMAIN, FRONTEND_URL
 from .coordinator import AirTrafficCoordinator
 
 PLATFORMS: list[str] = ["sensor", "binary_sensor"]
+CONFIG_SCHEMA = cv.config_entry_only_config_schema
 _FRONTEND_DIR = Path(__file__).parent / "frontend"
 
 
