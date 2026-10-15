@@ -8,7 +8,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from playwright.sync_api import Page, expect, sync_playwright
+from playwright.sync_api import Page, PlaywrightTimeoutError, expect, sync_playwright
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -239,7 +239,13 @@ def main() -> None:
             configure_options(page, entry_id)
             api(page, "POST", f"config/config_entries/entry/{entry_id}/reload")
             page.goto(BASE_URL + "/lovelace/0", wait_until="networkidle")
-            page.wait_for_selector("hui-view", timeout=60000)
+            try:
+                page.wait_for_selector("hui-view", timeout=60000)
+            except PlaywrightTimeoutError:
+                page.screenshot(path=str(ARTIFACTS / "lovelace-timeout.png"), full_page=True)
+                (ARTIFACTS / "lovelace-timeout.html").write_text(page.content(), encoding="utf-8")
+                (ARTIFACTS / "lovelace-timeout.txt").write_text(page.locator("body").inner_text(), encoding="utf-8")
+                raise
             page.wait_for_timeout(5000)
             page.screenshot(path=str(ARTIFACTS / "desktop-light.png"), full_page=True)
             assert page.locator("air-traffic-card").count() >= 4
