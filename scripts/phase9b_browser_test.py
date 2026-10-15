@@ -116,7 +116,11 @@ def onboard(page: Page) -> None:
         matching[0].click(force=True)
         page.wait_for_timeout(700)
     if "/onboarding.html" in page.url:
-        raise AssertionError(f"Onboarding did not complete: {page.url}")
+        page.screenshot(path=str(ARTIFACTS / "onboarding-after-submit.png"), full_page=True)
+        (ARTIFACTS / "onboarding-after-submit.html").write_text(page.content(), encoding="utf-8")
+        raise AssertionError(
+            f"Onboarding did not complete: {page.url}; visible text: {page.locator('body').inner_text()[:3000]}"
+        )
 
 
 def ws(page: Page, message: dict) -> dict:
