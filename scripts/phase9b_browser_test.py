@@ -82,6 +82,11 @@ def onboard(page: Page) -> None:
     if "/onboarding.html" not in page.url:
         return
 
+    welcome = page.get_by_role("button", name=re.compile(r"Create my smart home|Erstelle dein Smart Home", re.I))
+    if welcome.count() and welcome.first.is_visible():
+        welcome.first.click(force=True)
+        page.wait_for_timeout(700)
+
     for selector, value in (
         ("input[name='name']", "Phase 9B Tester"),
         ("input[name='username']", "phase9b"),
