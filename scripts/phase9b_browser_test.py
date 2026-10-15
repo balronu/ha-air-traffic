@@ -35,8 +35,8 @@ def write_test_config() -> None:
     config_path = CONFIG / "configuration.yaml"
     config_path.write_text(
         config_path.read_text(encoding="utf-8").replace(
-            "default_config:\\n\\n",
-            "config:\\nfrontend:\\napi:\\nauth:\\nonboarding:\\nwebsocket_api:\\nlovelace:\\n\\n",
+            "default_config:\n\n",
+            "config:\nfrontend:\napi:\nauth:\nonboarding:\nwebsocket_api:\nlovelace:\n\n",
         ),
         encoding="utf-8",
     )
