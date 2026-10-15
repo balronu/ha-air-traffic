@@ -174,7 +174,10 @@ def onboard(page: Page) -> None:
 
 
 def ws(page: Page, message: dict) -> dict:
-    result = page.evaluate("""async (message) => await document.querySelector('home-assistant').hass.callWS(message)""", message)
+    result = page.evaluate("""async (message) => {
+      try { return await document.querySelector('home-assistant').hass.callWS(message); }
+      catch (error) { throw new Error(JSON.stringify(error)); }
+    }""", message)
     assert isinstance(result, dict), result
     return result
 
