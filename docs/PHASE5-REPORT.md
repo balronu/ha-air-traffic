@@ -2,8 +2,8 @@
 
 **Branch:** `work/air-traffic-modernization`  
 **Ausgangscommit:** `e9deae4c2b6bcb70e44cae40f6b732594a3b33c0`  
-**Implementation-Commit:** wird nach dem lokalen Commit eingetragen  
-**Git-Status:** wird nach dem lokalen Commit abschließend geprüft  
+**Implementation-Commit:** `2fee7b6a49acc5a48ccb31ff403a5625c81304b7`  
+**Git-Status:** sauber nach dem Implementierungscommit  
 **Phase 6:** nicht begonnen
 
 ## Branding und Bilder
@@ -18,7 +18,6 @@ Erstellt und geprüft:
 | `images/branding/air-traffic-logo.png` | 1024 × 1024 RGBA | PASS |
 | `images/branding/air-traffic-social-preview.png` | 1280 × 640 RGB | PASS |
 | `images/branding/air-traffic-readme-banner.png` | 1600 × 533 RGB | PASS |
-| `images/branding/air-traffic-banner-background.png` | 2172 × 724 RGB | PASS, Roh-/Quellasset |
 
 Logo, Social Preview und Banner wurden mit dem verfügbaren Bildgenerator als
 visuelle Projektassets erstellt. Bannertexte wurden anschließend deterministisch

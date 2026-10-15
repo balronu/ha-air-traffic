@@ -16,7 +16,6 @@
 | Project logo | `images/branding/air-traffic-logo.png` | 1024 × 1024 RGBA | PASS |
 | Social preview | `images/branding/air-traffic-social-preview.png` | 1280 × 640 RGB | PASS |
 | README banner | `images/branding/air-traffic-readme-banner.png` | 1600 × 533 RGB | PASS |
-| Generated banner source | `images/branding/air-traffic-banner-background.png` | 2172 × 724 RGB | source asset |
 
 The logo, social preview and README banner are generated visual assets. Text
 for the two banners was added deterministically after generation so the exact
