@@ -65,6 +65,10 @@ jobs:
       - name: Run isolated Home Assistant and real-browser validation
         run: python scripts/phase9d_browser_test.py
 
+      - name: Run standalone production-bundle component validation
+        if: always()
+        run: python scripts/phase9d_component_test.py
+
       - name: Upload Phase 9B evidence
         if: always()
         uses: actions/upload-artifact@v4
