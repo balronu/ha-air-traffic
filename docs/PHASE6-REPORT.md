@@ -2,8 +2,8 @@
 
 **Branch:** `work/air-traffic-modernization`  
 **Ausgangscommit:** `03038a555b6fc25e73d70ecd827d4058c3d74e91`  
-**Commit-SHA:** wird nach dem lokalen Abschluss eingetragen  
-**Git-Status:** wird nach dem lokalen Abschluss geprüft  
+**Commit-SHA:** `6b029cad40366da9150dcf518f89a36c5093ec13`  
+**Git-Status:** sauber nach dem lokalen Abschluss  
 **Gesamtbewertung:** **NOT READY FOR BETA**
 
 ## Zusammenfassung
