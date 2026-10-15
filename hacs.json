@@ -1,6 +1,6 @@
 {
-  "name": "Air Traffic Merge",
+  "name": "Air Traffic",
   "content_in_root": false,
   "render_readme": true,
-  "domains": ["air_traffic_merge"]
+  "filename": "air_traffic_merge"
 }

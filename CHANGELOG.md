@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.4.0-beta.1 (draft)
+
+- public branding prepared as **Air Traffic**
+- integrated Lovelace card assets and legacy card compatibility documented
+- generated logo, social preview and README banner added under `images/branding/`
+- README, German README, contributing guide and GitHub templates prepared
+- release notes drafted; no tag or release published
+
 ## v1.3.1
 - aus dem aktuell funktionierenden Home-Assistant-Stand unter `/config/custom_components/air_traffic_merge` neu aufgebaut
 - Runtime-Fehler durch `hass.helpers.entity_component.async_update_entity` entfernt
