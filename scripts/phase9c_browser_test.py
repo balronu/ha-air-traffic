@@ -24,7 +24,11 @@ def write_test_config() -> None:
     (CONFIG / "configuration.yaml").write_text(
         """homeassistant:
   name: Phase 9C Isolated HA
-default_config:
+config:
+api:
+auth:
+onboarding:
+websocket_api:
 http:
   server_port: 8123
 logger:
@@ -40,47 +44,26 @@ template:
         unique_id: phase9c_adsb_feed
         state: "2"
         attributes:
-          aircraft:
-            - hex: abc123
-              flight: TEST123
-              lat: "{{ states('input_number.adsb_lat') | float(50) }}"
-              lon: 8.0
-              alt_baro: 12000
-              gs: 410
-              track: 90
-            - hex: def456
-              flight: TEST456
-              lat: 50.2
-              lon: 8.2
-              alt_baro: 9000
-              gs: 320
-              track: 180
+          aircraft: "{{ [{'hex': 'abc123', 'flight': 'TEST123', 'lat': states('input_number.adsb_lat') | float(50), 'lon': 8.0, 'alt_baro': 12000, 'gs': 410, 'track': 90}, {'hex': 'def456', 'flight': 'TEST456', 'lat': 50.2, 'lon': 8.2, 'alt_baro': 9000, 'gs': 320, 'track': 180}] }}"
           messages: 7
           now: 1700000000
       - name: FR24 Feed
         unique_id: phase9c_fr24_feed
         state: "1"
         attributes:
-          flights:
-            - hex: fr24123
-              callsign: FR24123
-              registration: D-TEST
-              latitude: 51.0
-              longitude: 9.0
-              altitude: 11000
-              speed: 400
+          flights: "{{ [{'hex': 'fr24123', 'callsign': 'FR24123', 'registration': 'D-TEST', 'latitude': 51.0, 'longitude': 9.0, 'altitude': 11000, 'speed': 400}] }}"
       - name: Air Traffic Empty Fixture
         unique_id: phase9c_empty
         state: "0"
-        attributes: {flights: [], adsb_count: 0, fr24_count: 0, merged_count: 0}
+        attributes: {flights: "{{ [] }}", adsb_count: 0, fr24_count: 0, merged_count: 0}
       - name: Air Traffic Error Fixture
         unique_id: phase9c_error
         state: "0"
-        attributes: {flights: [], source_errors: {adsb: "Mock source error"}}
+        attributes: {flights: "{{ [] }}", source_errors: "{{ {'adsb': 'Mock source error'} }}"}
       - name: Air Traffic Stale Fixture
         unique_id: phase9c_stale
         state: "1"
-        attributes: {flights: [{callsign: STALE1, hex: stale1}], data_stale: true}
+        attributes: {flights: "{{ [{'callsign': 'STALE1', 'hex': 'stale1'}] }}", data_stale: true}
 input_number:
   adsb_lat:
     min: 0
