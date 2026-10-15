@@ -30,6 +30,9 @@ _LOGGER = logging.getLogger(__name__)
 @dataclass
 class AirTrafficSnapshot:
     flights: list[dict[str, Any]]
+    aircraft: list[dict[str, Any]]
+    messages: int | None
+    now: int | None
     fr24_count: int
     adsb_count: int
     merged_count: int
@@ -54,6 +57,8 @@ class AirTrafficCoordinator(DataUpdateCoordinator[AirTrafficSnapshot]):
         self.session = async_get_clientsession(hass)
         self._last_fr24: list[dict[str, Any]] = []
         self._last_adsb: list[dict[str, Any]] = []
+        self._last_adsb_messages: int | None = None
+        self._last_adsb_now: int | None = None
         self._previous_tracked: set[str] = set()
         super().__init__(
             hass, _LOGGER, name=f"{DOMAIN}_{entry.entry_id}",
@@ -98,6 +103,7 @@ class AirTrafficCoordinator(DataUpdateCoordinator[AirTrafficSnapshot]):
 
         return AirTrafficSnapshot(
             flights=[flight.as_dict() if isinstance(flight, Flight) else flight for flight in flights],
+            aircraft=list(self._last_adsb), messages=self._last_adsb_messages, now=self._last_adsb_now,
             fr24_count=len(fr24), adsb_count=len(adsb),
             merged_count=sum(1 for flight in flights if flight.source == "BOTH"),
             tracking_enabled=tracking_enabled, tracking_mode=tracking_mode,
@@ -131,6 +137,8 @@ class AirTrafficCoordinator(DataUpdateCoordinator[AirTrafficSnapshot]):
             if not isinstance(aircraft, list):
                 return self._last_adsb, "ADS-B-Attribut aircraft ist keine Liste"
             self._last_adsb = [item for item in aircraft if isinstance(item, dict)]
+            self._last_adsb_messages = entity.attributes.get("messages") if isinstance(entity.attributes, dict) else None
+            self._last_adsb_now = entity.attributes.get("now") if isinstance(entity.attributes, dict) else None
             return self._last_adsb, None
 
         url = text(config.get(CONF_ADSB_URL))
@@ -152,6 +160,8 @@ class AirTrafficCoordinator(DataUpdateCoordinator[AirTrafficSnapshot]):
                 if not isinstance(aircraft, list):
                     return self._last_adsb, "ADS-B-Antwort enthält keine aircraft-Liste"
                 self._last_adsb = [item for item in aircraft if isinstance(item, dict)]
+                self._last_adsb_messages = payload.get("messages")
+                self._last_adsb_now = payload.get("now")
                 return self._last_adsb, None
             except ClientResponseError as err:
                 last_error = f"ADS-B HTTP {err.status}"

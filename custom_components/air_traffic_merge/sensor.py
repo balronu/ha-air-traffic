@@ -39,6 +39,9 @@ class AirTrafficMergedSensor(CoordinatorEntity[AirTrafficCoordinator], SensorEnt
         return {
             "last_update": int(data.last_update),
             "flights": data.flights,
+            "aircraft": data.aircraft,
+            "messages": data.messages,
+            "now": data.now,
             "fr24_count": data.fr24_count,
             "adsb_count": data.adsb_count,
             "merged_count": data.merged_count,

@@ -2,7 +2,7 @@ import { LitElement, css, html, nothing } from "lit";
 
 type State = { state: string; attributes: Record<string, unknown> };
 type Hass = { states: Record<string, State | undefined>; locale?: { language?: string } };
-type Config = { type?: string; entity?: string; title?: string; max_items?: number; show_status?: boolean; show_debug?: boolean };
+type Config = { type?: string; entity?: string; title?: string; max_items?: number; show_status?: boolean; show_debug?: boolean; show_counts?: boolean; compact?: boolean };
 const unavailable = new Set(["unknown", "unavailable"]);
 
 function text(value: unknown, fallback = "—"): string {
@@ -45,15 +45,15 @@ export class AirTrafficCard extends LitElement {
       this._config = { ...config };
     } else {
       this._error = undefined;
-      this._config = { title: "Air Traffic", max_items: 50, show_status: true, show_debug: false, ...config };
+      this._config = { title: "Air Traffic", max_items: 25, show_status: true, show_debug: false, ...config };
     }
     this.requestUpdate();
   }
   set hass(value: Hass) { this._hass = value; this.requestUpdate(); }
   get hass(): Hass | undefined { return this._hass; }
-  getCardSize(): number { return 6; }
+  getCardSize(): number { return this._config.compact ? 5 : 6; }
   static getConfigElement(): HTMLElement { return document.createElement("air-traffic-card-editor"); }
-  static getStubConfig(): Config { return { type: "custom:air-traffic-card", show_status: true, max_items: 50 }; }
+  static getStubConfig(): Config { return { type: "custom:air-traffic-card", show_status: true, max_items: 25 }; }
 
   render() {
     if (this._error) return html`<ha-card><div class="error">${this._error}</div></ha-card>`;
@@ -62,11 +62,12 @@ export class AirTrafficCard extends LitElement {
     if (!state) return html`<ha-card><div class="error">Entity nicht gefunden: ${this._config.entity}</div></ha-card>`;
     if (unavailable.has(state.state)) return html`<ha-card><div class="empty">Entity ist nicht verfügbar.</div></ha-card>`;
     const attrs = state.attributes ?? {};
-    const flights = Array.isArray(attrs.flights) ? attrs.flights.slice(0, Number(this._config.max_items) || 50) as Record<string, unknown>[] : [];
+    const flights = Array.isArray(attrs.flights) ? attrs.flights.slice(0, Number(this._config.max_items) || 25) as Record<string, unknown>[] : [];
     const stale = attrs.data_stale === true;
     return html`<ha-card>
       <div class="header"><div><h2>${this._config.title ?? "Air Traffic"}</h2><div class="muted">${number(state.state)} Flugzeuge</div></div><div class="muted">${stale ? "⚠ Veraltete Quelldaten" : "● Aktualisiert"}</div></div>
       ${this._config.show_status !== false ? html`<div class="status">FR24: ${number(attrs.fr24_count)} · ADS-B: ${number(attrs.adsb_count)} · Zusammengeführt: ${number(attrs.merged_count)}</div>` : nothing}
+      ${this._config.show_counts && attrs.counts ? html`<div class="status">Kategorien: ${escapeHtml(JSON.stringify(attrs.counts))}</div>` : nothing}
       ${attrs.source_errors && Object.keys(attrs.source_errors as object).length ? html`<div class="error">${escapeHtml(JSON.stringify(attrs.source_errors))}</div>` : nothing}
       ${this._detail(flights)}
       ${flights.length ? html`<div class="list">${flights.map((flight) => this._flight(flight))}</div>` : html`<div class="empty">Keine Flugzeuge vorhanden.</div>`}

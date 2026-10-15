@@ -23,4 +23,10 @@ describe("Air Traffic Card", () => {
     await card.updateComplete;
     expect(card.shadowRoot?.textContent).toContain("Position");
   });
+
+  it("accepts legacy card parameters without changing the entity contract", () => {
+    const card = new AirTrafficCard();
+    card.setConfig({ entity: "sensor.air_traffic_merged", show_counts: true, show_debug: true, compact: true, max_items: 25 });
+    expect(card.getCardSize()).toBe(5);
+  });
 });

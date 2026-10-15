@@ -20,7 +20,7 @@ type: custom:air-traffic-card
 entity: sensor.air_traffic_merged
 title: Air Traffic
 show_status: true
-max_items: 50
+max_items: 25
 ```
 
 Bestehende Dashboards mit `custom:air-traffic-merge-card` bleiben über einen
