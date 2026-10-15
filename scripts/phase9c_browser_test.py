@@ -225,6 +225,7 @@ def main() -> None:
         raise RuntimeError("hass executable is unavailable")
     console: list[str] = []
     errors: list[str] = []
+    failed_requests: list[str] = []
     with log_path.open("w", encoding="utf-8") as log_file:
         process = subprocess.Popen([hass, "-c", str(CONFIG)], stdout=log_file, stderr=subprocess.STDOUT, cwd=ROOT)
     try:
@@ -234,6 +235,7 @@ def main() -> None:
             page = browser.new_page(viewport={"width": 1440, "height": 1000})
             page.on("console", lambda message: console.append(f"{message.type}: {message.text}"))
             page.on("pageerror", lambda error: errors.append(str(error)))
+            page.on("requestfailed", lambda request: failed_requests.append(f"{request.method} {request.url}: {request.failure}"))
             onboard(page)
             entry_id = configure_integration(page)
             configure_options(page, entry_id)
@@ -245,6 +247,9 @@ def main() -> None:
                 page.screenshot(path=str(ARTIFACTS / "lovelace-timeout.png"), full_page=True)
                 (ARTIFACTS / "lovelace-timeout.html").write_text(page.content(), encoding="utf-8")
                 (ARTIFACTS / "lovelace-timeout.txt").write_text(page.locator("body").inner_text(), encoding="utf-8")
+                (ARTIFACTS / "browser-console.txt").write_text("\n".join(console), encoding="utf-8")
+                (ARTIFACTS / "browser-errors.json").write_text(json.dumps(errors, indent=2), encoding="utf-8")
+                (ARTIFACTS / "browser-request-failures.txt").write_text("\n".join(failed_requests), encoding="utf-8")
                 raise
             page.wait_for_timeout(5000)
             page.screenshot(path=str(ARTIFACTS / "desktop-light.png"), full_page=True)
@@ -283,6 +288,7 @@ def main() -> None:
         raise AssertionError("Integration errors in Home Assistant log:\n" + "\n".join(integration_errors))
     (ARTIFACTS / "browser-console.txt").write_text("\n".join(console), encoding="utf-8")
     (ARTIFACTS / "browser-errors.json").write_text(json.dumps(errors, indent=2), encoding="utf-8")
+    (ARTIFACTS / "browser-request-failures.txt").write_text("\n".join(failed_requests), encoding="utf-8")
     print("Phase 9C isolated Home Assistant + browser validation passed")
 
 
