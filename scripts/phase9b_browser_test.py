@@ -107,6 +107,17 @@ def onboard(page: Page) -> None:
         raise AssertionError(f"Onboarding submit control not found; visible text: {page.locator('body').inner_text()[:2000]}")
     visible[-1].click(force=True)
     page.wait_for_timeout(700)
+    country = page.get_by_text("Country", exact=True)
+    if country.count() and country.first.is_visible():
+        country.first.click(force=True)
+        page.wait_for_timeout(300)
+        germany = page.get_by_text("Germany", exact=True)
+        if germany.count() and germany.first.is_visible():
+            germany.first.click(force=True)
+        else:
+            # The English onboarding selector always exposes a country option;
+            # keep this failure explicit if the HA UI changes its catalog.
+            raise AssertionError("HA onboarding country selector opened without Germany option")
     for _ in range(4):
         buttons = page.locator("ha-button, mwc-button, button")
         visible = [buttons.nth(i) for i in range(buttons.count()) if buttons.nth(i).is_visible()]
