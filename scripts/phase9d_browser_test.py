@@ -197,7 +197,18 @@ def main() -> None:
             page.goto(BASE_URL + "/lovelace/native", wait_until="networkidle"); page.wait_for_selector("hui-view", timeout=60000); expect(page.get_by_text("Native Home Assistant card", exact=True)).to_be_visible(); page.screenshot(path=str(ARTIFACTS / "02-native-card.png"), full_page=True); assert page.locator("air-traffic-card").count() == 0
             entry_id = configure_integration(page); configure_options(page, entry_id); api(page, "POST", f"config/config_entries/entry/{entry_id}/reload")
             page.goto(BASE_URL + "/lovelace/air-traffic", wait_until="networkidle"); page.wait_for_selector("hui-view", timeout=60000); page.wait_for_timeout(2000); page.screenshot(path=str(ARTIFACTS / "03-desktop-light.png"), full_page=True)
-            assert page.locator("air-traffic-card").count() == 5; assert page.get_by_text("TEST123", exact=True).count() >= 1; assert page.get_by_text("TEST456", exact=True).count() >= 1; assert page.get_by_text("Keine Flugzeuge vorhanden.", exact=True).count() >= 1; assert page.get_by_text("Mock source error", exact=False).count() >= 1; assert page.get_by_text("Veraltete Quelldaten", exact=False).count() >= 1
+            checks = {
+                "five card elements": page.locator("air-traffic-card").count(),
+                "TEST123": page.get_by_text("TEST123", exact=True).count(),
+                "TEST456": page.get_by_text("TEST456", exact=True).count(),
+                "empty state": page.get_by_text("Keine Flugzeuge vorhanden.", exact=True).count(),
+                "source error": page.get_by_text("Mock source error", exact=False).count(),
+                "stale state": page.get_by_text("Veraltete Quelldaten", exact=False).count(),
+            }
+            (ARTIFACTS / "browser-dom-checks.json").write_text(json.dumps(checks, indent=2), encoding="utf-8")
+            assert checks["five card elements"] == 5, checks
+            for label in ("TEST123", "TEST456", "empty state", "source error", "stale state"):
+                assert checks[label] >= 1, checks
             assert page.locator("script[src*='/air_traffic_merge/air-traffic-card.js']").count() == 1; custom_cards = page.evaluate("() => window.customCards?.filter((card) => card.type.includes('air-traffic'))"); assert len(custom_cards or []) == 2, custom_cards
             modern = page.locator("air-traffic-card").first; modern.locator("article.flight").first.click(); expect(modern.locator(".detail")).to_be_visible(); assert "Position:" in modern.locator(".detail").inner_text()
             page.evaluate("""async () => await document.querySelector('home-assistant').hass.callService('input_number', 'set_value', {entity_id:'input_number.adsb_lat', value:51.0})"""); page.wait_for_function("() => document.querySelector('home-assistant')?.hass?.states?.['sensor.air_traffic_merged']?.attributes?.flights?.some(f => f.callsign === 'TEST123' && Number(f.latitude) === 51)", timeout=15000); assert "51" in modern.locator(".detail").inner_text(); page.screenshot(path=str(ARTIFACTS / "04-aircraft-update-detail.png"), full_page=True)
