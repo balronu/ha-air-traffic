@@ -36,7 +36,13 @@ def write_test_config() -> None:
     config_path.write_text(
         config_path.read_text(encoding="utf-8").replace(
             "default_config:\n\n",
-            "config:\nfrontend:\napi:\nauth:\nonboarding:\nwebsocket_api:\nlovelace:\n\n",
+            "config:\napi:\nauth:\nonboarding:\nwebsocket_api:\n",
+        ),
+        encoding="utf-8",
+    )
+    config_path.write_text(
+        config_path.read_text(encoding="utf-8").replace(
+            "lat: 50.0", "lat: \"{{ states('input_number.adsb_lat') | float(50) }}\""
         ),
         encoding="utf-8",
     )
@@ -86,22 +92,23 @@ def onboard(page: Page) -> None:
         if locator.count():
             locator.fill(value)
     page.screenshot(path=str(ARTIFACTS / "onboarding-before-submit.png"), full_page=True)
-    candidates = page.get_by_role("button", name=re.compile(r"Create account|Konto erstellen|Submit|Absenden", re.I))
+    action_re = re.compile(r"Create account|Konto erstellen|Submit|Absenden", re.I)
+    candidates = page.get_by_role("button", name=action_re)
     if not candidates.count():
-        candidates = page.locator("ha-button, mwc-button, button")
+        candidates = page.locator("ha-button, mwc-button").filter(has_text=action_re)
     visible = [candidates.nth(i) for i in range(candidates.count()) if candidates.nth(i).is_visible()]
     if not visible:
         (ARTIFACTS / "onboarding.html").write_text(page.content(), encoding="utf-8")
         raise AssertionError(f"Onboarding submit control not found; visible text: {page.locator('body').inner_text()[:2000]}")
-    visible[-1].click()
+    visible[-1].click(force=True)
     page.wait_for_timeout(700)
     for _ in range(4):
-        buttons = page.locator("button")
+        buttons = page.locator("ha-button, mwc-button, button")
         visible = [buttons.nth(i) for i in range(buttons.count()) if buttons.nth(i).is_visible()]
-        matching = [button for button in visible if re.search(r"Next|Weiter|Finish|Fertig|Submit", button.inner_text(), re.I)]
+        matching = [button for button in visible if re.search(r"Next|Weiter|Finish|Fertig|Submit|Absenden", button.inner_text(), re.I)]
         if not matching:
             break
-        matching[0].click()
+        matching[0].click(force=True)
         page.wait_for_timeout(700)
     if "/onboarding.html" in page.url:
         raise AssertionError(f"Onboarding did not complete: {page.url}")
@@ -198,6 +205,13 @@ def main() -> None:
         except subprocess.TimeoutExpired:
             process.kill()
             process.wait(timeout=10)
+    ha_log = log_path.read_text(encoding="utf-8", errors="replace")
+    integration_errors = [
+        line for line in ha_log.splitlines()
+        if "ERROR" in line and "custom_components.air_traffic_merge" in line
+    ]
+    if integration_errors:
+        raise AssertionError("Integration errors in Home Assistant log:\n" + "\n".join(integration_errors))
     (ARTIFACTS / "browser-console.txt").write_text("\n".join(console), encoding="utf-8")
     (ARTIFACTS / "browser-errors.json").write_text(json.dumps(errors, indent=2), encoding="utf-8")
     print("Phase 9B isolated Home Assistant + browser validation passed")
