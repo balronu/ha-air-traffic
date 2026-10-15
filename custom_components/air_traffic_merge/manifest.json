@@ -3,7 +3,7 @@
   "name": "Air Traffic",
   "codeowners": ["@balronu"],
   "config_flow": true,
-  "dependencies": ["http"],
+  "dependencies": ["frontend", "http"],
   "documentation": "https://github.com/balronu/ha-air-traffic",
   "integration_type": "service",
   "iot_class": "local_polling",
