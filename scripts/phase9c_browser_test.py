@@ -239,7 +239,8 @@ def main() -> None:
             configure_options(page, entry_id)
             api(page, "POST", f"config/config_entries/entry/{entry_id}/reload")
             page.goto(BASE_URL + "/lovelace/0", wait_until="networkidle")
-            page.wait_for_timeout(1500)
+            page.wait_for_selector("hui-view", timeout=60000)
+            page.wait_for_timeout(5000)
             page.screenshot(path=str(ARTIFACTS / "desktop-light.png"), full_page=True)
             assert page.locator("air-traffic-card").count() >= 4
             assert page.get_by_text("TEST123", exact=True).count() >= 1
