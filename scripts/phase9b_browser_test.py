@@ -109,7 +109,11 @@ def onboard(page: Page) -> None:
     page.wait_for_timeout(700)
     country = page.get_by_text("Country", exact=True)
     if country.count() and country.first.is_visible():
-        country.first.click(force=True)
+        combo = page.locator("ha-combo-box, ha-selector, mwc-select").first
+        if combo.count() and combo.is_visible():
+            combo.click(force=True)
+        else:
+            country.first.click(force=True)
         page.wait_for_timeout(300)
         germany = page.get_by_text("Germany", exact=True)
         if germany.count() and germany.first.is_visible():
