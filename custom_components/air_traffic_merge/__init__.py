@@ -14,7 +14,7 @@ from .const import DOMAIN, FRONTEND_URL
 from .coordinator import AirTrafficCoordinator
 
 PLATFORMS: list[str] = ["sensor", "binary_sensor"]
-CONFIG_SCHEMA = cv.config_entry_only_config_schema
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 _FRONTEND_DIR = Path(__file__).parent / "frontend"
 
 
