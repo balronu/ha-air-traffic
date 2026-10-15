@@ -182,26 +182,37 @@ def ws(page: Page, message: dict) -> dict:
     return result
 
 
+def api(page: Page, method: str, path: str, data: dict | None = None) -> dict:
+    result = page.evaluate("""async ({method, path, data}) => {
+      try {
+        return await document.querySelector('home-assistant').hass.callApi(
+          method, path, data, {'HA-Frontend-Base': location.origin});
+      } catch (error) { throw new Error(JSON.stringify(error)); }
+    }""", {"method": method, "path": path, "data": data})
+    assert isinstance(result, dict), result
+    return result
+
+
 def configure_integration(page: Page) -> str:
-    flow = ws(page, {"type": "config_entries/flow", "handler": "air_traffic_merge", "show_advanced": False})
+    flow = api(page, "POST", "config/config_entries/flow", {"handler": "air_traffic_merge"})
     flow_id = flow["flow_id"]
-    flow = ws(page, {"type": "config_entries/flow", "flow_id": flow_id, "user_input": {"source_mode": "both", "enable_tracking": False}})
+    flow = api(page, "POST", f"config/config_entries/flow/{flow_id}", {"source_mode": "both", "enable_tracking": False})
     assert flow["step_id"] == "fr24"
-    flow = ws(page, {"type": "config_entries/flow", "flow_id": flow_id, "user_input": {"fr24_entity": "sensor.fr24_feed"}})
+    flow = api(page, "POST", f"config/config_entries/flow/{flow_id}", {"fr24_entity": "sensor.fr24_feed"})
     assert flow["step_id"] == "adsb_source"
-    flow = ws(page, {"type": "config_entries/flow", "flow_id": flow_id, "user_input": {"adsb_source": "entity", "scan_interval": 10}})
+    flow = api(page, "POST", f"config/config_entries/flow/{flow_id}", {"adsb_source": "entity", "scan_interval": 10})
     assert flow["step_id"] == "adsb_entity"
-    flow = ws(page, {"type": "config_entries/flow", "flow_id": flow_id, "user_input": {"adsb_entity": "sensor.adsb_feed"}})
+    flow = api(page, "POST", f"config/config_entries/flow/{flow_id}", {"adsb_entity": "sensor.adsb_feed"})
     assert flow["type"] == "create_entry", flow
     return flow["result"]["entry_id"]
 
 
 def configure_options(page: Page, entry_id: str) -> None:
-    flow = ws(page, {"type": "config_entries/options", "entry_id": entry_id})
+    flow = api(page, "POST", "config/config_entries/options/flow", {"handler": entry_id})
     flow_id = flow["flow_id"]
-    flow = ws(page, {"type": "config_entries/options", "flow_id": flow_id, "user_input": {"scan_interval": 20, "enable_tracking": True}})
+    flow = api(page, "POST", f"config/config_entries/options/flow/{flow_id}", {"scan_interval": 20, "enable_tracking": True})
     assert flow["step_id"] == "tracking"
-    flow = ws(page, {"type": "config_entries/options", "flow_id": flow_id, "user_input": {"track_mode": "callsign", "track_callsigns": "TEST123"}})
+    flow = api(page, "POST", f"config/config_entries/options/flow/{flow_id}", {"track_mode": "callsign", "track_callsigns": "TEST123"})
     assert flow["type"] == "create_entry", flow
 
 
@@ -226,8 +237,7 @@ def main() -> None:
             onboard(page)
             entry_id = configure_integration(page)
             configure_options(page, entry_id)
-            ws(page, {"type": "config_entries/unload", "entry_id": entry_id})
-            ws(page, {"type": "config_entries/reload", "entry_id": entry_id})
+            api(page, "POST", f"config/config_entries/entry/{entry_id}/reload")
             page.goto(BASE_URL + "/lovelace/0", wait_until="networkidle")
             page.wait_for_timeout(1500)
             page.screenshot(path=str(ARTIFACTS / "desktop-light.png"), full_page=True)
