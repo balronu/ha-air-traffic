@@ -70,7 +70,7 @@ the required HA surface mocked.
 green and the `Error('Object')` source identified before beta release. The
 standalone bundle test is supplementary and does not replace failed HA-E2E.
 
-PR #4 remains open and unmerged at final commit
-`1a1fdb8cff67b0fb78a38df816e1a7b743120db2`. No tag, release, productive
+PR #4 remains open and unmerged at final report commit
+`43b482e` (browser validation code was validated at `1a1fdb8`). No tag, release, productive
 HA/dashboard, VM 104/Proxmox, HACS removal, or old-card-repository archival
 was made.
