@@ -8,7 +8,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from playwright.sync_api import Page, PlaywrightTimeoutError, expect, sync_playwright
+from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError, expect, sync_playwright
 
 
 ROOT = Path(__file__).resolve().parents[1]
