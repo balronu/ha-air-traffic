@@ -5,8 +5,8 @@ nachfolgend aufgeführten blockierten HA-/CI-Gates
 **Branch:** `work/air-traffic-modernization`  
 **Ausgangscommit:** `8e91e302b9fdcee6fcf3d2537b9f717336b4ec6c`  
 **Implementation-Commit:** `29fcec79a6c0dd43fbefe1e301993d76d897eebd`  
-**Dokumentations-Commit:** wird nach der Berichtaktualisierung eingetragen  
-**Git-Status:** wird nach der Berichtaktualisierung abschließend geprüft
+**Dokumentations-Commit:** im finalen lokalen Branch enthalten  
+**Git-Status:** sauber nach Abschluss der Phase
 
 ## Ergebnis
 
