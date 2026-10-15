@@ -174,11 +174,10 @@ Python-/HA-Testumgebung nicht ausgeführt werden. Dafür sind die CI-Gates in
 | Offline-Kompatibilitätsverträge | PASS |
 | Legacy-/neuer Frontend-Kartentyp | PASS |
 | Legacy-Parameter einschließlich `max_items: 25` | PASS |
-| Frontend-Build und Bundle-Synchronität | PASS, nach aktuellem Build erneut zu bestätigen |
+| Frontend-Build und Bundle-Synchronität | PASS |
 | HA Config-Entry-/Registry-Fixture | BLOCKED: kein lokales HA-/pip-/venv-Tooling |
 | Reload/Unload in HA | BLOCKED: kein HA-Fixture |
 | Hassfest | BLOCKED: CI vorbereitet, lokal nicht verfügbar |
 | HACS-Validierung | BLOCKED: CI vorbereitet, lokal nicht verfügbar |
 | Gitleaks | NOT RUN: Binary lokal nicht verfügbar |
 | Produktive HA-/Dashboard-Migration | NOT RUN: ausdrücklich ausgeschlossen |
-
