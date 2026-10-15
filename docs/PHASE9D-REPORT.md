@@ -1,6 +1,6 @@
 # Phase 9D Report — Isolated Lovelace Browser Validation
 
-**Status:** Pending CI execution on the updated PR head.
+**Status:** Complete — **NOT READY FOR BETA**
 
 ## Scope and isolation
 
@@ -18,6 +18,18 @@ assertion failed because the fixture named `ADS-B Feed` was referenced as
 `sensor.ads_b_feed`. The integration therefore correctly reported an unavailable
 ADS-B entity and returned no TEST123/TEST456 aircraft. The production bundle was
 not the cause and had not yet reached its aircraft assertions.
+
+## Root cause of the remaining CI failure
+
+The corrected fixture reaches the production bundle and renders the expected
+cards and content. The final HA browser gate still records one Playwright
+`pageerror` with `Error('Object')`; request failures, WebSocket diagnostics,
+and Home Assistant integration-error logs are empty. Its exact HA frontend
+source remains unresolved, so the error is treated as a real failed gate.
+
+An intermediate assertion failure was a test defect: the legacy card is
+registered as `air-traffic-merge-card`, so the page contains four modern card
+elements plus one legacy element. The test now checks those separately.
 
 ## Phase 9D validation order
 
@@ -38,12 +50,27 @@ CI artifacts. Any assertion failure keeps the workflow red.
 
 ## Results
 
-To be filled from the completed CI run: run URL, artifact URL, screenshot matrix,
-console/request/WebSocket review, and final commit.
+Validation commit: `1a1fdb8cff67b0fb78a38df816e1a7b743120db2`.
+
+- [Phase 9D CI run 38733133101](https://github.com/balronu/ha-air-traffic/actions/runs/38733133101): installation and bundle build passed; isolated HA browser gate failed on the single page error; standalone production-bundle component test passed.
+- Component checks passed for modern and legacy cards, automatic registration, TEST123/TEST456, detail selection, empty/error/stale states, and the production bundle.
+- [Tests run 38733133102](https://github.com/balronu/ha-air-traffic/actions/runs/38733133102): passed.
+- [Validate run 38733133138](https://github.com/balronu/ha-air-traffic/actions/runs/38733133138): passed.
+- [CI artifacts](https://github.com/balronu/ha-air-traffic/actions/runs/38733133101#artifacts): screenshots, browser console/errors, request failures, WebSocket frames, Home Assistant logs, DOM checks, and component evidence.
+
+The HA matrix reached the empty Lovelace view, native Markdown card, both Air
+Traffic card types, FR24/ADS-B aircraft, detail selection, source-error,
+stale-data and empty states, plus the responsive/theme stages before the final
+error gate. The independent component test confirms the same bundle with only
+the required HA surface mocked.
 
 ## Remaining risks and decision
 
-The final assessment is **NOT READY FOR BETA** until the updated CI run passes
-all gates and the resulting artifacts are reviewed. No tag, release, merge to
-`main`, productive HA change, dashboard change, Proxmox change, HACS removal,
-or old-card-repository archival is authorized by this phase.
+**Final assessment: NOT READY FOR BETA.** The isolated HA browser gate must be
+green and the `Error('Object')` source identified before beta release. The
+standalone bundle test is supplementary and does not replace failed HA-E2E.
+
+PR #4 remains open and unmerged at final commit
+`1a1fdb8cff67b0fb78a38df816e1a7b743120db2`. No tag, release, productive
+HA/dashboard, VM 104/Proxmox, HACS removal, or old-card-repository archival
+was made.
