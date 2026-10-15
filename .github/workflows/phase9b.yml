@@ -35,6 +35,12 @@ jobs:
           python -m pip install \
             "homeassistant==2026.10.1" \
             "home-assistant-frontend==20260930.3" \
+            "ha-ffmpeg==3.2.2" \
+            "hassil==3.12.1" \
+            "infrared-protocols==10.1.0" \
+            "mutagen==1.48.1" \
+            "PyTurboJPEG==1.8.3" \
+            "rf-protocols==4.3.0" \
             "pytest==9.0.3" \
             "pytest-asyncio==1.4.0" \
             "pytest-homeassistant-custom-component==0.13.372" \
