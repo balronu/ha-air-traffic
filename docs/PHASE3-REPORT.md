@@ -2,7 +2,7 @@
 
 **Branch:** `work/air-traffic-modernization`  
 **Ausgangscommit:** `1133b192f90179b2d777834930b1fed43f9bc734`  
-**Commit:** `41938b716be85d071b3dc459df0a8893b5aa8183`  
+**Implementation commit:** `e10047dbb3d49ef8d3983cf2d7d1b2b703cf5801`  
 **Git-Status:** sauber  
 **Status:** lokale Kandidatenarbeit abgeschlossen; Phase 4 nicht begonnen
 
@@ -98,6 +98,7 @@ verifiziert zu bezeichnen.
 
 ## Abschluss
 
-Commit `41938b716be85d071b3dc459df0a8893b5aa8183` ist der letzte lokale Stand;
-der Git-Status ist sauber. Es gab keinen Push, Merge, Release, Repository-Rename,
+Der finale lokale Stand enthält diesen Implementierungscommit plus die
+Berichtsaktualisierung; der Git-Status ist sauber. Es gab keinen Push, Merge,
+Release, Repository-Rename,
 Archivierung, HA-Installationsversuch oder Dashboard-/Produktivänderung.
