@@ -8,7 +8,7 @@ try:
 except ImportError:  # pragma: no cover - expected on the local offline runner
     HomeAssistant = None
 else:
-    from air_traffic_merge.const import (
+    from const import (
         CONF_ADSB_ENTITY,
         CONF_ADSB_SOURCE,
         CONF_ENABLE_TRACKING,
