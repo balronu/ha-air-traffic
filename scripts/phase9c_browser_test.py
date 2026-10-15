@@ -139,27 +139,35 @@ def onboard(page: Page) -> None:
           if (!tokenResponse.ok) throw new Error(`auth token failed: ${tokenResponse.status} ${await tokenResponse.text()}`);
           const tokens = await tokenResponse.json(); tokens.hassUrl = base;
           tokens.clientId = clientId; tokens.expires = Date.now() + tokens.expires_in * 1000;
+          const callWs = (message) => new Promise((resolve, reject) => {
+            const socket = new WebSocket(`ws://${location.host}/api/websocket`);
+            socket.onmessage = (event) => {
+              const value = JSON.parse(event.data);
+              if (value.type === 'auth_required') socket.send(JSON.stringify({type: 'auth', access_token: tokens.access_token}));
+              else if (value.type === 'auth_ok') socket.send(JSON.stringify({...message, id: 1}));
+              else if (value.id === 1) { socket.close(); value.success ? resolve(value.result) : reject(new Error(JSON.stringify(value))); }
+            };
+            socket.onerror = () => reject(new Error('HA WebSocket error'));
+          });
+          await callWs({type: 'config/core/update', location_name: 'Phase 9C CI', latitude: 50.1109,
+            longitude: 8.6821, elevation: 100, unit_system: 'metric', time_zone: 'Europe/Berlin',
+            currency: 'EUR', country: 'DE', language: 'en'});
+          const api = async (path, body) => {
+            const response = await fetch(`${base}/api/${path}`, {method: 'POST',
+              headers: {'Authorization': `Bearer ${tokens.access_token}`, 'Content-Type': 'application/json'},
+              body: body ? JSON.stringify(body) : undefined});
+            if (!response.ok) throw new Error(`${path} failed: ${response.status} ${await response.text()}`);
+            return response.json();
+          };
+          await api('onboarding/core_config'); await api('onboarding/analytics');
+          await api('onboarding/integration', {client_id: clientId, redirect_uri: `${base}/?auth_callback=1`});
           localStorage.setItem('hassTokens', JSON.stringify(tokens));
           return {steps: await (await fetch(`${base}/api/onboarding`)).json()};
         }"""
     )
     assert result["steps"][0]["done"] is True, result
-    page.reload(wait_until="domcontentloaded")
-    page.wait_for_function("() => Boolean(document.querySelector('home-assistant')?.hass)")
-    page.evaluate(
-        """async () => {
-          const hass = document.querySelector('home-assistant').hass;
-          await hass.callWS({type: 'config/core/update', location_name: 'Phase 9C CI',
-            latitude: 50.1109, longitude: 8.6821, elevation: 100, unit_system: 'metric',
-            time_zone: 'Europe/Berlin', currency: 'EUR', country: 'DE', language: 'en'});
-          await hass.callApi('POST', 'onboarding/core_config');
-          await hass.callApi('POST', 'onboarding/analytics');
-          await hass.callApi('POST', 'onboarding/integration', {
-            client_id: `${location.origin}/`, redirect_uri: `${location.origin}/?auth_callback=1`});
-        }"""
-    )
     page.goto(BASE_URL + "/lovelace/0", wait_until="networkidle")
-    page.wait_for_timeout(1200)
+    page.wait_for_function("() => Boolean(document.querySelector('home-assistant')?.hass)", timeout=60000)
     if "/onboarding.html" in page.url:
         page.screenshot(path=str(ARTIFACTS / "onboarding-api-failure.png"), full_page=True)
         raise AssertionError(f"API onboarding did not complete: {page.url}")
