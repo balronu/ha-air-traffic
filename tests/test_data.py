@@ -46,6 +46,21 @@ class AirTrafficDataTests(unittest.TestCase):
         self.assertTrue(flights[0].tracked)
         self.assertIsNone(flights[0].alt_m)
 
+    def test_invalid_coordinates_are_rejected_and_old_positions_are_marked_stale(self):
+        result = normalize_adsb({"lat": 123, "lon": -181, "seen_pos": 301})
+        self.assertIsNone(result["latitude"])
+        self.assertIsNone(result["longitude"])
+        self.assertTrue(result["position_stale"])
+
+    def test_repeated_records_from_one_source_do_not_duplicate_a_flight(self):
+        flights = merge_sources(
+            [],
+            [{"hex": "abc", "flight": "TEST1", "alt_baro": 1000}, {"hex": "ABC", "flight": "TEST1", "gs": 200}],
+        )
+        self.assertEqual(len(flights), 1)
+        self.assertEqual(flights[0].callsign, "TEST1")
+        self.assertEqual(flights[0].spd_kmh, 370)
+
 
 if __name__ == "__main__":
     unittest.main()

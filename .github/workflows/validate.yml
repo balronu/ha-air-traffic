@@ -6,25 +6,43 @@ on:
   workflow_dispatch:
 
 jobs:
-  validate:
+  hassfest:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: home-assistant/actions/hassfest@master
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Compile Python files
-        run: python -m compileall -q custom_components
-
-      - name: Validate JSON files
+  hacs-structure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate integration and frontend contract
         run: |
+          test -f custom_components/air_traffic_merge/manifest.json
+          test -f custom_components/air_traffic_merge/config_flow.py
+          test -f custom_components/air_traffic_merge/translations/en.json
+          test -f custom_components/air_traffic_merge/translations/de.json
+          test -f custom_components/air_traffic_merge/frontend/air-traffic-card.js
           python - <<'PY'
           import json
           from pathlib import Path
-
-          for path in Path(".").rglob("*.json"):
-              json.loads(path.read_text(encoding="utf-8"))
-              print(path)
+          manifest = json.loads(Path('custom_components/air_traffic_merge/manifest.json').read_text())
+          package = json.loads(Path('frontend/package.json').read_text())
+          lockfile = json.loads(Path('frontend/package-lock.json').read_text())
+          assert manifest['domain'] == 'air_traffic_merge'
+          assert manifest['name'] == 'Air Traffic'
+          assert manifest['version'] == package['version'] == lockfile['version']
+          assert 'air-traffic-card' in Path('custom_components/air_traffic_merge/frontend/air-traffic-card.js').read_text()
           PY
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

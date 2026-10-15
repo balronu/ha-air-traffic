@@ -15,9 +15,12 @@ describe("Air Traffic Card", () => {
     const card = new AirTrafficCard();
     document.body.append(card);
     card.setConfig({ entity: "sensor.air_traffic_merged" });
-    (card as any).hass = { states: { "sensor.air_traffic_merged": { state: "1", attributes: { flights: [{ callsign: "TEST1", source: "ADSB", alt_m: 1000 }], data_stale: true } } } };
+    (card as any).hass = { states: { "sensor.air_traffic_merged": { state: "1", attributes: { flights: [{ key: "test", callsign: "TEST1", source: "ADSB", alt_m: 1000, latitude: 50, longitude: 8 }], data_stale: true } } } };
     await card.updateComplete;
     expect(card.shadowRoot?.textContent).toContain("TEST1");
     expect(card.shadowRoot?.textContent).toContain("Veraltete");
+    (card as any)._selectFlight("test");
+    await card.updateComplete;
+    expect(card.shadowRoot?.textContent).toContain("Position");
   });
 });

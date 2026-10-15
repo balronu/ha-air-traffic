@@ -1,0 +1,9 @@
+[project]
+name = "ha-air-traffic"
+version = "1.4.0-beta.1"
+description = "Air Traffic Home Assistant integration with a bundled Lovelace card"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["custom_components/air_traffic_merge"]

@@ -8,10 +8,12 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any
 
+from aiohttp import ClientError, ClientResponseError
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util import dt as dt_util
 
 from .const import (
@@ -94,8 +96,6 @@ class AirTrafficCoordinator(DataUpdateCoordinator[AirTrafficSnapshot]):
         current_tracked = {flight.tracked_target for flight in flights if flight.tracked_target}
         self._fire_tracking_events(current_tracked, tracking_mode)
 
-        if source_errors and not flights:
-            raise UpdateFailed("; ".join(f"{key}: {value}" for key, value in source_errors.items()))
         return AirTrafficSnapshot(
             flights=[flight.as_dict() if isinstance(flight, Flight) else flight for flight in flights],
             fr24_count=len(fr24), adsb_count=len(adsb),
@@ -110,6 +110,8 @@ class AirTrafficCoordinator(DataUpdateCoordinator[AirTrafficSnapshot]):
         entity = self.hass.states.get(entity_id) if entity_id else None
         if entity is None:
             return (self._last_fr24, f"Entity nicht verfügbar: {entity_id}") if entity_id else ([], "Keine FR24-Entity konfiguriert")
+        if getattr(entity, "state", "") in {"unknown", "unavailable"}:
+            return self._last_fr24, f"Entity nicht verfügbar: {entity_id}"
         flights = entity.attributes.get("flights", []) if isinstance(entity.attributes, dict) else []
         if not isinstance(flights, list):
             return self._last_fr24, "FR24-Attribut flights ist keine Liste"
@@ -123,6 +125,8 @@ class AirTrafficCoordinator(DataUpdateCoordinator[AirTrafficSnapshot]):
             entity = self.hass.states.get(entity_id) if entity_id else None
             if entity is None:
                 return self._last_adsb, f"Entity nicht verfügbar: {entity_id or 'unbekannt'}"
+            if getattr(entity, "state", "") in {"unknown", "unavailable"}:
+                return self._last_adsb, f"Entity nicht verfügbar: {entity_id}"
             aircraft = entity.attributes.get("aircraft", []) if isinstance(entity.attributes, dict) else []
             if not isinstance(aircraft, list):
                 return self._last_adsb, "ADS-B-Attribut aircraft ist keine Liste"
@@ -132,19 +136,33 @@ class AirTrafficCoordinator(DataUpdateCoordinator[AirTrafficSnapshot]):
         url = text(config.get(CONF_ADSB_URL))
         if not url:
             return self._last_adsb, "Keine ADS-B-URL konfiguriert"
-        try:
-            async with asyncio.timeout(10):
-                async with self.session.get(url) as response:
-                    response.raise_for_status()
-                    payload = await response.json(content_type=None)
-            aircraft = payload.get("aircraft", []) if isinstance(payload, dict) else []
-            if not isinstance(aircraft, list):
-                return self._last_adsb, "ADS-B-Antwort enthält keine aircraft-Liste"
-            self._last_adsb = [item for item in aircraft if isinstance(item, dict)]
-            return self._last_adsb, None
-        except (asyncio.TimeoutError, OSError, ValueError, TypeError) as err:
-            _LOGGER.debug("ADS-B source failed: %s", type(err).__name__)
-            return self._last_adsb, f"ADS-B-Abfrage fehlgeschlagen: {type(err).__name__}"
+        last_error = "ADS-B-Abfrage fehlgeschlagen"
+        for attempt in range(3):
+            try:
+                async with asyncio.timeout(10):
+                    async with self.session.get(url) as response:
+                        if response.status == 429 or response.status >= 500:
+                            raise ClientResponseError(
+                                response.request_info, response.history,
+                                status=response.status, message="retryable response",
+                            )
+                        response.raise_for_status()
+                        payload = await response.json(content_type=None)
+                aircraft = payload.get("aircraft", []) if isinstance(payload, dict) else []
+                if not isinstance(aircraft, list):
+                    return self._last_adsb, "ADS-B-Antwort enthält keine aircraft-Liste"
+                self._last_adsb = [item for item in aircraft if isinstance(item, dict)]
+                return self._last_adsb, None
+            except ClientResponseError as err:
+                last_error = f"ADS-B HTTP {err.status}"
+                if err.status not in {429} and err.status < 500:
+                    break
+            except (ClientError, asyncio.TimeoutError, OSError, ValueError, TypeError) as err:
+                last_error = f"ADS-B-Abfrage fehlgeschlagen: {type(err).__name__}"
+            if attempt < 2:
+                await asyncio.sleep(2**attempt)
+        _LOGGER.debug("ADS-B source failed after retries: %s", last_error)
+        return self._last_adsb, last_error
 
     def _fire_tracking_events(self, current: set[str], mode: str) -> None:
         appeared = sorted(current - self._previous_tracked)

@@ -29,11 +29,15 @@ export class AirTrafficCard extends LitElement {
     .badge { background:var(--secondary-background-color); border-radius:999px; padding:3px 7px; font-size:.72rem; }
     .metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-top:8px; }
     .metric { min-width:0; } .metric strong { display:block; overflow-wrap:anywhere; font-size:.88rem; }
+    .flight { cursor:pointer; } .flight:focus-visible { outline:2px solid var(--primary-color); outline-offset:2px; }
+    .detail { margin:0 0 10px; padding:12px; border-radius:12px; background:var(--secondary-background-color); }
+    .detail-head { display:flex; justify-content:space-between; gap:8px; } .close { color:var(--primary-color); border:0; background:none; cursor:pointer; font-size:1.1rem; }
     @container (max-width:600px) { ha-card{padding:12px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.header{align-items:flex-start;flex-direction:column} }
   `;
   private _config: Config = {};
   private _hass?: Hass;
   private _error?: string;
+  private _selectedKey?: string;
 
   setConfig(config: Config): void {
     if (!config || typeof config.entity !== "string" || !config.entity.trim()) {
@@ -64,15 +68,24 @@ export class AirTrafficCard extends LitElement {
       <div class="header"><div><h2>${this._config.title ?? "Air Traffic"}</h2><div class="muted">${number(state.state)} Flugzeuge</div></div><div class="muted">${stale ? "⚠ Veraltete Quelldaten" : "● Aktualisiert"}</div></div>
       ${this._config.show_status !== false ? html`<div class="status">FR24: ${number(attrs.fr24_count)} · ADS-B: ${number(attrs.adsb_count)} · Zusammengeführt: ${number(attrs.merged_count)}</div>` : nothing}
       ${attrs.source_errors && Object.keys(attrs.source_errors as object).length ? html`<div class="error">${escapeHtml(JSON.stringify(attrs.source_errors))}</div>` : nothing}
+      ${this._detail(flights)}
       ${flights.length ? html`<div class="list">${flights.map((flight) => this._flight(flight))}</div>` : html`<div class="empty">Keine Flugzeuge vorhanden.</div>`}
       ${this._config.show_debug ? html`<pre>${JSON.stringify(attrs, null, 2)}</pre>` : nothing}
     </ha-card>`;
   }
   private _flight(flight: Record<string, unknown>) {
-    return html`<article class="flight"><div class="top"><span class="name">${text(flight.callsign, text(flight.registration, "Unbekannt"))}</span><span class="badge">${text(flight.source)}</span></div><div class="muted">${text(flight.airline)} · ${text(flight.aircraft_model)}</div><div class="metrics">
+    const key = String(flight.key ?? `${flight.registration ?? ""}:${flight.callsign ?? ""}`);
+    return html`<article class="flight" tabindex="0" role="button" @click=${() => this._selectFlight(key)} @keydown=${(event: KeyboardEvent) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); this._selectFlight(key); } }}><div class="top"><span class="name">${text(flight.callsign, text(flight.registration, "Unbekannt"))}</span><span class="badge">${text(flight.source)}</span></div><div class="muted">${text(flight.airline)} · ${text(flight.aircraft_model)}</div><div class="metrics">
       ${this._metric("Registrierung", flight.registration)}${this._metric("Höhe", flight.alt_m, " m")}${this._metric("Geschwindigkeit", flight.spd_kmh, " km/h")}${this._metric("Kurs", flight.dir_deg, "°")}
     </div>${flight.tracked ? html`<div class="muted">★ Beobachtet: ${text(flight.tracked_target)}</div>` : nothing}</article>`;
   }
+  private _detail(flights: Record<string, unknown>[]) {
+    if (!this._selectedKey) return nothing;
+    const flight = flights.find((item) => String(item.key ?? `${item.registration ?? ""}:${item.callsign ?? ""}`) === this._selectedKey);
+    if (!flight) return nothing;
+    return html`<section class="detail" aria-live="polite"><div class="detail-head"><strong>${text(flight.callsign, text(flight.registration, "Flugzeugdetails"))}</strong><button class="close" aria-label="Details schließen" @click=${() => { this._selectedKey = undefined; }}>×</button></div><div class="muted">${text(flight.airline)} · ${text(flight.aircraft_model)} · HEX ${text(flight.hex)}</div><div class="muted">Position: ${text(flight.latitude)} / ${text(flight.longitude)} · Datenalter: ${flight.position_age_s == null ? "—" : number(flight.position_age_s, " s")}</div></section>`;
+  }
+  private _selectFlight(key: string) { this._selectedKey = key; this.requestUpdate(); }
   private _metric(label: string, value: unknown, suffix = "") { return html`<div class="metric"><span class="muted">${label}</span><strong>${typeof value === "number" ? number(value, suffix) : text(value)}</strong></div>`; }
 }
 
