@@ -54,18 +54,27 @@ CI artifacts. Any assertion failure keeps the workflow red.
 
 ## Results
 
-Validation commit: `0d3c4bfe03a60294b47cdcdb14217940903cafab`.
+Validation commit: `0d3c4bfe03a60294b47cdcdb14217940903cafab`; final report
+commit: `cd1538c77f38ed088fdade33d86b40797d898bd3`.
 
-- [Phase 9D CI run 38865379193](https://github.com/balronu/ha-air-traffic/actions/runs/38865379193): installation, bundle build, isolated HA browser gate, standalone production-bundle component test, and artifact upload passed.
+- [Phase 9D CI run 38866438763](https://github.com/balronu/ha-air-traffic/actions/runs/38866438763): installation, bundle build, isolated HA browser gate, standalone production-bundle component test, and artifact upload passed on final report HEAD `cd1538c`.
 - The preceding diagnostic run [38864384126](https://github.com/balronu/ha-air-traffic/actions/runs/38864384126) was red on the intermittent `Error("Object")` pageerror and remains documented as a non-final diagnostic result.
+- Browser DOM evidence recorded exactly 4 modern cards and 1 legacy card, with TEST123=2, TEST456=2, empty-state=2, source-error=1, and stale-state=1; browser errors, console output, request failures, and integration-error filter were empty.
 - Component checks passed for modern and legacy cards, automatic registration, TEST123/TEST456, detail selection, state-driven aircraft update, source-error/stale/empty states, and the production bundle.
-- [CI artifacts](https://github.com/balronu/ha-air-traffic/actions/runs/38865379193#artifacts): screenshots, browser console/errors, request failures, WebSocket frames, Home Assistant logs, DOM checks, and component evidence.
+- [CI artifacts](https://github.com/balronu/ha-air-traffic/actions/runs/38866438763#artifacts) (artifact `phase9d-lovelace-evidence`, ID `12031712579`, 47 files, 700266 bytes): screenshots, browser console/errors, request failures, WebSocket frames, Home Assistant logs, DOM checks, and component evidence.
 
-The HA matrix reached the empty Lovelace view, native Markdown card, both Air
-Traffic card types, FR24/ADS-B aircraft, detail selection, source-error,
-stale-data and empty states, plus the responsive/theme stages before the final
-error gate. The independent component test confirms the same bundle with only
-the required HA surface mocked.
+The captured complete Home Assistant log also contains unrelated runner-level
+warnings/errors from optional `ffmpeg`/camera setup; the dedicated
+`custom_components.air_traffic_merge` integration-error filter is empty and
+the Phase 9D job passed. These optional-environment messages are not treated as
+production integration failures.
+
+The HA matrix reached the empty Lovelace view, native Markdown card, exactly
+four modern Air Traffic card elements and exactly one legacy card element,
+FR24/ADS-B aircraft, detail selection, source-error, stale-data and empty
+states, plus the responsive/theme stages before the final error gate. The
+independent component test confirms the same bundle with only the required HA
+surface mocked.
 
 ## Remaining risks and decision
 
