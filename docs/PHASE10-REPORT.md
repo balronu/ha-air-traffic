@@ -9,6 +9,8 @@
 - Main Tests: [run 38871068479](https://github.com/balronu/ha-air-traffic/actions/runs/38871068479)
 - Main Validate: [run 38871068453](https://github.com/balronu/ha-air-traffic/actions/runs/38871068453)
 - Phase 9D browser gate: [run 38868720577](https://github.com/balronu/ha-air-traffic/actions/runs/38868720577)
+- Beta tag Tests: [run 38871437854](https://github.com/balronu/ha-air-traffic/actions/runs/38871437854)
+- Beta tag Validate: [run 38871437863](https://github.com/balronu/ha-air-traffic/actions/runs/38871437863)
 
 Both post-merge Main workflows passed before release preparation. The tested
 candidate preserves the internal `air_traffic_merge` domain, existing entity
