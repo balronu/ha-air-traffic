@@ -183,14 +183,18 @@ def main() -> None:
     ARTIFACTS.mkdir(exist_ok=True); write_test_config(); log_path = ARTIFACTS / "home-assistant.log"
     hass = shutil.which("hass");
     if not hass: raise RuntimeError("hass executable is unavailable")
-    console: list[str] = []; errors: list[str] = []; requests: list[str] = []; websockets: list[str] = []; process = None
+    console: list[str] = []; errors: list[str] = []; requests: list[str] = []; websockets: list[str] = []; bundle_responses: list[str] = []; process = None
     try:
         with log_path.open("w", encoding="utf-8") as log_file: process = subprocess.Popen([hass, "-c", str(CONFIG)], stdout=log_file, stderr=subprocess.STDOUT, cwd=ROOT)
         wait_for_ha()
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(); page = browser.new_page(viewport={"width": 1440, "height": 1000})
             page.add_init_script("""() => { window.__phase9dErrors = []; addEventListener('error', e => window.__phase9dErrors.push({type:'error', message:e.message, stack:e.error?.stack || '', source:e.filename})); addEventListener('unhandledrejection', e => window.__phase9dErrors.push({type:'unhandledrejection', message:String(e.reason), stack:e.reason?.stack || ''})); }""")
-            page.on("console", lambda message: console.append(f"{message.type}: {message.text}")); page.on("pageerror", lambda error: errors.append(json.dumps({"repr": repr(error), "name": getattr(error, "name", None), "message": getattr(error, "message", None), "stack": getattr(error, "stack", None)}, default=str))); page.on("requestfailed", lambda request: requests.append(f"{request.method} {request.url}: {request.failure}")); page.on("response", lambda response: requests.append(f"HTTP {response.status} {response.request.method} {response.url}") if response.status >= 400 else None)
+            page.on("console", lambda message: console.append(f"{message.type}: {message.text}")); page.on("pageerror", lambda error: errors.append(json.dumps({"repr": repr(error), "name": getattr(error, "name", None), "message": getattr(error, "message", None), "stack": getattr(error, "stack", None)}, default=str))); page.on("requestfailed", lambda request: requests.append(f"{request.method} {request.url}: {request.failure}"))
+            def handle_response(response):
+                if response.url.endswith("air-traffic-card.js") and response.status == 200: bundle_responses.append(response.url)
+                if response.status >= 400: requests.append(f"HTTP {response.status} {response.request.method} {response.url}")
+            page.on("response", handle_response)
             page.on("websocket", lambda socket: (websockets.append(f"OPEN {socket.url}"), socket.on("framereceived", lambda payload: websockets.append(f"RECV {socket.url} {str(payload)[:500]}")), socket.on("framesent", lambda payload: websockets.append(f"SEND {socket.url} {str(payload)[:500]}")), socket.on("close", lambda: websockets.append(f"CLOSE {socket.url}"))))
             onboard(page)
             page.goto(BASE_URL + "/lovelace/empty", wait_until="networkidle"); page.wait_for_selector("hui-view", timeout=60000); page.screenshot(path=str(ARTIFACTS / "01-empty-lovelace.png"), full_page=True); assert page.locator("air-traffic-card").count() == 0
@@ -211,8 +215,7 @@ def main() -> None:
             assert checks["legacy card elements"] == 1, checks
             for label in ("TEST123", "TEST456", "empty state", "source error", "stale state"):
                 assert checks[label] >= 1, checks
-            resources = page.evaluate("() => performance.getEntriesByType('resource').map((entry) => entry.name).filter((name) => name.endsWith('air-traffic-card.js'))")
-            assert len(resources) == 1, resources
+            assert len(bundle_responses) == 1, bundle_responses
             custom_cards = page.evaluate("() => window.customCards?.filter((card) => card.type.includes('air-traffic'))"); assert len(custom_cards or []) == 2, custom_cards
             modern = page.locator("air-traffic-card").first; modern.locator("article.flight").first.click(); expect(modern.locator(".detail")).to_be_visible(); assert "Position:" in modern.locator(".detail").inner_text()
             page.evaluate("""async () => await document.querySelector('home-assistant').hass.callService('input_number', 'set_value', {entity_id:'input_number.adsb_lat', value:51.0})"""); page.wait_for_function("() => document.querySelector('home-assistant')?.hass?.states?.['sensor.air_traffic_merged']?.attributes?.flights?.some(f => f.callsign === 'TEST123' && Number(f.latitude) === 51)", timeout=15000); assert "51" in modern.locator(".detail").inner_text(); page.screenshot(path=str(ARTIFACTS / "04-aircraft-update-detail.png"), full_page=True)

@@ -22,11 +22,12 @@ not the cause and had not yet reached its aircraft assertions.
 ## Root cause of the remaining CI failure
 
 The corrected fixture reaches the production bundle and renders the expected
-cards and content. The latest HA browser gate failed on a test-only resource
-selector that required the URL to contain `/air_traffic_merge/`; Home
-Assistant's actual resource URL contains the same production filename but a
-different prefix. The browser error list, request failures, WebSocket
-diagnostics, and Home Assistant integration-error log were empty.
+cards and content. The latest HA browser gate failed on test-only resource
+selectors: HA loads the bundle dynamically and does not expose it through the
+expected DOM or Performance-Entry shape. The browser error list, request
+failures, WebSocket diagnostics, and Home Assistant integration-error log were
+empty. The test now checks exactly one successful Playwright response for the
+production bundle, alongside the rendered elements and registration catalog.
 
 An earlier assertion failure was another test-only defect: the legacy card is
 registered as `air-traffic-merge-card`, so the page contains four modern card
