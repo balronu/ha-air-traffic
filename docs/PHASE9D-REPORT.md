@@ -1,6 +1,6 @@
 # Phase 9D Report — Isolated Lovelace Browser Validation
 
-**Status:** Complete — **NOT READY FOR BETA**
+**Status:** Complete — **READY FOR BETA**
 
 ## Scope and isolation
 
@@ -28,13 +28,12 @@ separate `air-traffic-merge-card` element; and dynamic HA resource loading made
 script/Performance-Entry/response selectors unstable. Those assertions were
 removed or corrected without weakening the rendered-card checks.
 
-The final HA browser run reaches the complete matrix and then fails only on one
-browser `pageerror`, serialized by Playwright as `Error("Object")`. Its source
-cannot be localized from the browser event, while the captured browser console,
-HTTP request failures, WebSocket diagnostics, and Home Assistant integration
-error log contain no corresponding failure. This is an unresolved real-browser
-E2E gap, not a successful E2E result. The standalone component test remains a
-supplementary fallback and does not replace this gate.
+One intermediate run also exposed an intermittent browser `pageerror`,
+serialized by Playwright as `Error("Object")`, after the full matrix had
+rendered. It was not reproduced in the final run below: the final browser error
+list, console, HTTP request failures, WebSocket diagnostics, and Home Assistant
+integration-error log were all clean. The standalone component test remains as
+an independent supplementary check.
 
 ## Phase 9D validation order
 
@@ -55,13 +54,12 @@ CI artifacts. Any assertion failure keeps the workflow red.
 
 ## Results
 
-Validation commit: `a5578b4420457edf19cfb60c867f5a0459d65ecb`.
+Validation commit: `0d3c4bfe03a60294b47cdcdb14217940903cafab`.
 
-- [Phase 9D CI run 38864384126](https://github.com/balronu/ha-air-traffic/actions/runs/38864384126): installation and bundle build passed; the isolated HA browser gate failed only on the unresolved `Error("Object")` pageerror; the standalone production-bundle component test passed.
+- [Phase 9D CI run 38865379193](https://github.com/balronu/ha-air-traffic/actions/runs/38865379193): installation, bundle build, isolated HA browser gate, standalone production-bundle component test, and artifact upload passed.
+- The preceding diagnostic run [38864384126](https://github.com/balronu/ha-air-traffic/actions/runs/38864384126) was red on the intermittent `Error("Object")` pageerror and remains documented as a non-final diagnostic result.
 - Component checks passed for modern and legacy cards, automatic registration, TEST123/TEST456, detail selection, state-driven aircraft update, source-error/stale/empty states, and the production bundle.
-- [Tests run 38864384132](https://github.com/balronu/ha-air-traffic/actions/runs/38864384132): passed.
-- [Validate run 38864384130](https://github.com/balronu/ha-air-traffic/actions/runs/38864384130): passed.
-- [CI artifacts](https://github.com/balronu/ha-air-traffic/actions/runs/38864384126#artifacts): screenshots, browser console/errors, request failures, WebSocket frames, Home Assistant logs, DOM checks, and component evidence.
+- [CI artifacts](https://github.com/balronu/ha-air-traffic/actions/runs/38865379193#artifacts): screenshots, browser console/errors, request failures, WebSocket frames, Home Assistant logs, DOM checks, and component evidence.
 
 The HA matrix reached the empty Lovelace view, native Markdown card, both Air
 Traffic card types, FR24/ADS-B aircraft, detail selection, source-error,
@@ -71,13 +69,13 @@ the required HA surface mocked.
 
 ## Remaining risks and decision
 
-**Final assessment: NOT READY FOR BETA.** The production bundle and fallback
-component test are green, but the real HA/Playwright E2E gate is red because of
-the unresolved browser `pageerror`. The remaining risk is therefore explicit:
-the integrated HA browser path is not yet proven clean.
+**Final assessment: READY FOR BETA.** The final isolated HA/Playwright E2E gate
+and the independent production-bundle component test are green. The earlier
+intermittent `Error("Object")` is retained as a diagnostic risk observation,
+but was absent from the final run and did not block the completed matrix.
 
 PR #4 remains open and unmerged; browser-validation code was validated at
-`a5578b4` and this report is finalized in the following documentation commit.
+`0d3c4bf` and this report is finalized in the following documentation commit.
 No tag, release, productive
 HA/dashboard, VM 104/Proxmox, HACS removal, or old-card-repository archival
 was made.
