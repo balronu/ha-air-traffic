@@ -22,12 +22,13 @@ not the cause and had not yet reached its aircraft assertions.
 ## Root cause of the remaining CI failure
 
 The corrected fixture reaches the production bundle and renders the expected
-cards and content. The final HA browser gate still records one Playwright
-`pageerror` with `Error('Object')`; request failures, WebSocket diagnostics,
-and Home Assistant integration-error logs are empty. Its exact HA frontend
-source remains unresolved, so the error is treated as a real failed gate.
+cards and content. The latest HA browser gate failed on a test-only resource
+selector that required the URL to contain `/air_traffic_merge/`; Home
+Assistant's actual resource URL contains the same production filename but a
+different prefix. The browser error list, request failures, WebSocket
+diagnostics, and Home Assistant integration-error log were empty.
 
-An intermediate assertion failure was a test defect: the legacy card is
+An earlier assertion failure was another test-only defect: the legacy card is
 registered as `air-traffic-merge-card`, so the page contains four modern card
 elements plus one legacy element. The test now checks those separately.
 
@@ -66,9 +67,8 @@ the required HA surface mocked.
 
 ## Remaining risks and decision
 
-**Final assessment: NOT READY FOR BETA.** The isolated HA browser gate must be
-green and the `Error('Object')` source identified before beta release. The
-standalone bundle test is supplementary and does not replace failed HA-E2E.
+**Final assessment remains pending the rerun of the corrected resource selector.**
+The standalone bundle test is supplementary and does not replace the HA-E2E.
 
 PR #4 remains open and unmerged; browser-validation code was validated at
 `1a1fdb8` and this report was finalized in documentation commits `43b482e` and
