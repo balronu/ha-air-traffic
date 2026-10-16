@@ -16,9 +16,8 @@ suppresses duplicates, exposes stable Home Assistant entities, and serves a
 responsive Lovelace card from the same integration.
 
 > **Release status:** Stable `v1.3.1` is the latest published release.
-> `1.4.0-beta.1` is prepared but not published. The isolated Lovelace browser
-> validation is still open; this README does not present the unreleased beta as
-> generally available.
+> The published pre-release `v1.4.0-beta.1` is available for testing, but it is
+> not a stable release.
 
 ## Contents
 
@@ -69,9 +68,9 @@ left empty; they are not inferred.
 - At least one supported source
 - Network access from Home Assistant to the ADS-B URL in URL mode
 
-The published stable release should be used for normal installations. The
-`main` branch and `1.4.0-beta.1` are development candidates until the beta
-validation gates are complete.
+The published stable release should be used for normal installations.
+`v1.4.0-beta.1` is a published pre-release for testing; `main` remains a
+development branch.
 
 ## Installation
 
@@ -218,8 +217,9 @@ migration and user decision.
 4. Confirm the existing Config Entry and the three Air Traffic entities.
 5. Open an existing dashboard and check the current or legacy card.
 
-The current development version is not a published beta. Do not install it in
-production merely because the version is visible in the source manifest.
+`v1.4.0-beta.1` is published but is not stable. Do not install it in
+production without validation merely because it is visible as a pre-release in
+HACS or in the source manifest.
 
 ## Troubleshooting
 

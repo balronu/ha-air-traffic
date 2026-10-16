@@ -17,9 +17,8 @@ stabile Home-Assistant-Entities bereit und liefert die responsive Lovelace-
 Karte im selben Integrationspaket.
 
 > **Release-Status:** Die zuletzt veröffentlichte stabile Version ist `v1.3.1`.
-> `1.4.0-beta.1` ist vorbereitet, aber noch nicht veröffentlicht. Die isolierte
-> Lovelace-Browserprüfung ist noch offen; diese README stellt die
-> unveröffentlichte Beta nicht als allgemein verfügbar dar.
+> Die veröffentlichte Pre-release-Version `v1.4.0-beta.1` ist für Tests
+> verfügbar, aber keine Stable-Version.
 
 ## Inhalt
 
@@ -71,8 +70,8 @@ Positionsalter. Fehlende Werte werden nicht erfunden.
 - Netzwerkzugriff von Home Assistant auf die ADS-B-URL im URL-Modus
 
 Für normale Installationen sollte die veröffentlichte stabile Version verwendet
-werden. `main` und `1.4.0-beta.1` sind Entwicklungskandidaten, solange die
-Beta-Prüfungen nicht abgeschlossen sind.
+werden. `v1.4.0-beta.1` ist eine veröffentlichte Pre-release-Version für Tests;
+`main` bleibt ein Entwicklungsstand.
 
 ## Installation
 
@@ -221,9 +220,9 @@ Entscheidung.
 4. Bestehenden Config Entry und die drei Air-Traffic-Entities prüfen.
 5. Ein bestehendes Dashboard öffnen und die aktuelle oder Legacy-Karte prüfen.
 
-Die aktuelle Entwicklungsversion ist keine veröffentlichte Beta. Sie sollte
-nicht allein deshalb produktiv installiert werden, weil die Versionsnummer im
-Manifest sichtbar ist.
+`v1.4.0-beta.1` ist veröffentlicht, aber nicht als Stable freigegeben. Sie
+sollte nicht ohne Prüfung produktiv installiert werden, nur weil sie als
+Pre-release in HACS oder im Manifest sichtbar ist.
 
 ## Fehlerbehebung
 
