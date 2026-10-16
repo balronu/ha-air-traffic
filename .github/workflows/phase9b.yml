@@ -1,0 +1,79 @@
+name: Phase 9D Lovelace browser validation
+
+on:
+  pull_request:
+    paths:
+      - "custom_components/**"
+      - "frontend/**"
+      - "scripts/phase9d_browser_test.py"
+      - ".github/workflows/phase9b.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-ha-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Home Assistant and browser test tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r https://raw.githubusercontent.com/home-assistant/core/2026.10.1/requirements_all.txt
+          python -m pip install \
+            "homeassistant==2026.10.1" \
+            "home-assistant-frontend==20260930.3" \
+            "ha-ffmpeg==3.2.2" \
+            "gazetteer-matcher==1.1.0" \
+            "gTTS==2.5.4" \
+            "hassil==3.12.1" \
+            "infrared-protocols==10.1.0" \
+            "mutagen==1.48.1" \
+            "PyMetno==0.13.0" \
+            "pyspeex-noise==1.0.2" \
+            "pymicro-vad==1.0.1" \
+            "PyTurboJPEG==1.8.3" \
+            "radios==1.0.0" \
+            "rf-protocols==4.3.0" \
+            "pytest==9.0.3" \
+            "pytest-asyncio==1.4.0" \
+            "pytest-homeassistant-custom-component==0.13.372" \
+            "playwright==1.55.0"
+          python -m playwright install --with-deps chromium
+
+      - name: Build and verify the tracked frontend bundle
+        working-directory: frontend
+        run: |
+          npm ci
+          npm test
+          npm run build
+          git diff --exit-code -- ../custom_components/air_traffic_merge/frontend/air-traffic-card.js
+
+      - name: Run isolated Home Assistant and real-browser validation
+        run: python scripts/phase9d_browser_test.py
+
+      - name: Run standalone production-bundle component validation
+        if: always()
+        run: python scripts/phase9d_component_test.py
+
+      - name: Upload Phase 9B evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase9d-lovelace-evidence
+          path: phase9d-artifacts/
+          if-no-files-found: warn
+          retention-days: 14
