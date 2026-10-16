@@ -1,6 +1,7 @@
-# Air Traffic v1.4.0-beta.1 (draft)
+# Air Traffic v1.4.0-beta.1
 
-> Draft only. No release or tag has been published.
+This is a GitHub pre-release for the consolidated Air Traffic integration and
+Lovelace card. It is not a stable release.
 
 ## English
 
@@ -20,8 +21,12 @@ installation before removing any old Lovelace resource.
 
 ### Validation
 
-Offline tests pass. HA fixture, Hassfest, HACS validation and secret scanning
-remain release gates and must pass in CI before publication.
+The merged candidate passed the isolated Home Assistant 2026.10.1 /
+Playwright browser gate, standalone production-bundle checks, Python tests,
+frontend tests/build, Hassfest, HACS structure validation, and secret scanning.
+The browser evidence covers both card types, automatic registration, entity
+slug handling, aircraft selection/update, source-error/stale/empty states,
+responsive rendering and light/dark themes.
 
 ## Deutsch
 
@@ -44,5 +49,9 @@ Lovelace-Ressourcen muss das neue Bundle geprüft werden.
 
 ### Validierung
 
-Offline-Tests bestehen. HA-Fixture, Hassfest, HACS-Validierung und Secret Scan
-bleiben Release-Gates und müssen vor Veröffentlichung in CI bestehen.
+Der zusammengeführte Kandidat bestand die isolierte Home-Assistant-2026.10.1- /
+Playwright-Browserprüfung, die eigenständige Bundle-Prüfung, Python-Tests,
+Frontend-Tests/Build, Hassfest, HACS-Strukturprüfung und Secret Scan. Die
+Browser-Evidenz deckt beide Kartentypen, automatische Registrierung,
+Entity-Slug-Verarbeitung, Flugauswahl/-aktualisierung, Quellfehler/Stale-/Leer-
+Zustände sowie responsive Darstellung und helle/dunkle Themes ab.
