@@ -192,7 +192,7 @@ def main() -> None:
             page.add_init_script("""() => { window.__phase9dErrors = []; addEventListener('error', e => window.__phase9dErrors.push({type:'error', message:e.message, stack:e.error?.stack || '', source:e.filename})); addEventListener('unhandledrejection', e => window.__phase9dErrors.push({type:'unhandledrejection', message:String(e.reason), stack:e.reason?.stack || ''})); }""")
             page.on("console", lambda message: console.append(f"{message.type}: {message.text}")); page.on("pageerror", lambda error: errors.append(json.dumps({"repr": repr(error), "name": getattr(error, "name", None), "message": getattr(error, "message", None), "stack": getattr(error, "stack", None)}, default=str))); page.on("requestfailed", lambda request: requests.append(f"{request.method} {request.url}: {request.failure}"))
             def handle_response(response):
-                if response.url.endswith("air-traffic-card.js") and response.status == 200: bundle_responses.append(response.url)
+                if "air-traffic-card.js" in response.url and response.status < 400: bundle_responses.append(response.url)
                 if response.status >= 400: requests.append(f"HTTP {response.status} {response.request.method} {response.url}")
             page.on("response", handle_response)
             page.on("websocket", lambda socket: (websockets.append(f"OPEN {socket.url}"), socket.on("framereceived", lambda payload: websockets.append(f"RECV {socket.url} {str(payload)[:500]}")), socket.on("framesent", lambda payload: websockets.append(f"SEND {socket.url} {str(payload)[:500]}")), socket.on("close", lambda: websockets.append(f"CLOSE {socket.url}"))))
